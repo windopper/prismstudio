@@ -1,18 +1,20 @@
-import './App.css';
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
-import BasicBoxComponent from './components/BasicBoxComponent';
+import "./App.css";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import ElementsComponent from "./components/ElementsComponent";
+import { useRef } from "react";
 
 function App() {
+
   return (
     <>
       <Canvas>
-        <OrbitControls enableDamping={false}/>
-        <ambientLight color={'gray'}/>
+        
+        <ambientLight color={"gray"} />
         <gridHelper args={[100, 100]} />
         <axesHelper args={[-100]} />
         <axesHelper args={[100]} />
-        <BasicBoxComponent position={[0.5, 0.5, 0.5]}/>
+        <ElementsComponent />
       </Canvas>
     </>
   );
