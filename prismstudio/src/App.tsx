@@ -9,13 +9,9 @@ function App() {
       <Canvas>
         <OrbitControls enableDamping={false}/>
         <ambientLight color={'gray'}/>
-        {/* <pointLight position={[10, 10, 10]} /> */}
         <gridHelper args={[100, 100]} />
-        <axesHelper args={[100]} rotation={[0, Math.PI, 0]}/>
+        <axesHelper args={[-100]} />
         <axesHelper args={[100]} />
-        {/* <mesh position={[0.5, 0.5, 0.5]}>
-          <boxGeometry args={[1, 1]} />
-        </mesh> */}
         <BasicBoxComponent position={[0.5, 0.5, 0.5]}/>
       </Canvas>
     </>
