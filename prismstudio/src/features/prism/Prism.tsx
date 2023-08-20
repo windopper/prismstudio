@@ -26,6 +26,7 @@ function Prism() {
       <Canvas className="absolute w-100 h-100">
         <ambientLight color={"gray"} />
         <gridHelper args={[100, 100]} />
+        <gridHelper args={[100, 800, 0x000000, 0x000000]} />
         <axesHelper args={[-100]} />
         <axesHelper args={[100]} />
         <PrismControls />

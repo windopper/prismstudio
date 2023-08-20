@@ -1,4 +1,4 @@
-import { TransformControls, useHelper } from "@react-three/drei";
+import { TransformControls, TransformControlsProps, useHelper } from "@react-three/drei";
 import React, { forwardRef, useCallback, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { BoxHelper, Color, Event, Mesh, Vector3 } from "three";
@@ -28,8 +28,6 @@ const BoxWithTransformControls = React.memo((props: Prop) => {
     const parent = boxRef.current.parent;
     const vector3: Vector3 = parent?.position!;
     const position: number[] = [vector3.x, vector3.y, vector3.z]
-    parent?.matrixWorld.setPosition(new Vector3(1, 1, 1));
-    console.log(parent);
     dispatch(updateFocusedComponentPosition({position}))
   }
 
@@ -44,6 +42,7 @@ const BoxWithTransformControls = React.memo((props: Prop) => {
         onMouseDown={stopOrbitControls}
         onMouseUp={startOrbitControls}
         onChange={updatePosition}
+        translationSnap={0.125}
         ref={controlRef}
       >
         <BoxMesh id={id} ref={boxRef} />
