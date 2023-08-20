@@ -7,11 +7,12 @@ import { ElementState } from "../features/prism/prismSlice";
 import { RootState } from "../store";
 
 export default function ElementsComponent() {
-  const [enableOrbitControl, setEnableOrbitControl] = useState(true);
-
   const { elements, focusOn } = useSelector((state: RootState) => {
-    return state?.prismSlice;
+    return state.prismSlice;
   });
+  const { orbitControlState } = useSelector((state: RootState) => {
+    return state.globalSlice
+  })
 
   return (
     <>
@@ -20,13 +21,7 @@ export default function ElementsComponent() {
           <ElementComponent key={v.id} id={v.id} isFocusOn={v.id === focusOn} />
         );
       })}
-      {/* <TransformControls
-        onMouseDown={(e) => setEnableOrbitControl(false)}
-        onMouseUp={(e) => setEnableOrbitControl(true)}
-      >
-        <ElementComponent />
-      </TransformControls> */}
-      <OrbitControls enableDamping={false} enabled={enableOrbitControl} />
+      <OrbitControls enableDamping={false} enabled={orbitControlState} />
     </>
   );
 }

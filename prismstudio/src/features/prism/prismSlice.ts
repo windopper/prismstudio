@@ -1,4 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { store } from "../../store";
+import { toggleOrbitControl } from "../global/globalSlice";
 
 let currentId = 0;
 
