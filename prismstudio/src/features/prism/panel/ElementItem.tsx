@@ -18,7 +18,7 @@ export default function ElementItem({state, isFocused}: ElementItemProp) {
     <div className={`flex flex-row hover:opacity-75 ${isFocused && 'prism-component-text-color'}`} onClick={focusElementItem}>
         <div>▲</div>
         <div>component</div>
-        <div>{state.id}</div>
+        <div>{state.position}</div>
     </div>
   )
 }
