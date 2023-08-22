@@ -10,6 +10,11 @@ export interface ElementState {
   scale: number[];
 }
 
+export interface GroupElementState {
+  id: number;
+  elements: ElementState[];
+}
+
 function createElementState(): ElementState {
   return {
     id: currentId++,
@@ -25,7 +30,10 @@ export interface PrismState {
   transformControlsMode: TransformControlsMode;
   orbitControlState: boolean;
   focusOn: number | undefined;
+  enableGroupSelection: boolean;
+  currentGroupSelectionElements: number[];
   elements: ElementState[];
+  groupElements: GroupElementState[];
 }
 
 const prismSlice = createSlice({
@@ -34,7 +42,10 @@ const prismSlice = createSlice({
     transformControlsMode: "translate",
     orbitControlState: true,
     focusOn: undefined,
+    enableGroupSelection: false,
+    currentGroupSelectionElements: [],
     elements: [] as ElementState[],
+    groupElements: [] as GroupElementState[],
   } as PrismState,
   reducers: {
     setTransformControlsMode(
@@ -58,6 +69,29 @@ const prismSlice = createSlice({
     },
     outFocusComponent: (state) => {
       state.focusOn = undefined;
+    },
+    setGroupSelectionMode: (
+      state,
+      action: PayloadAction<{ enabled: boolean }>
+    ) => {
+      state.enableGroupSelection = action.payload.enabled;
+    },
+    addGroupSelectionElementsIfEnabled: (
+      state,
+      action: PayloadAction<{ elementId: number }>
+    ) => {
+      if (!state.enableGroupSelection) return;
+      state.currentGroupSelectionElements.push(action.payload.elementId);
+    },
+    removeGroupSelectionElementsIfEnabled: (
+      state,
+      action: PayloadAction<{ elementId: number }>
+    ) => {
+      if (!state.enableGroupSelection) return;
+      state.currentGroupSelectionElements =
+        state.currentGroupSelectionElements.filter(
+          (v) => action.payload.elementId !== v
+        );
     },
     updateFocusedComponentPosition: (
       state,
@@ -85,26 +119,45 @@ const prismSlice = createSlice({
         (_, i) => i === state.focusOn
       );
       if (filteredElement.length == 0) return;
-      
+
       let { position, rotate, scale } = action.payload;
       position = position.map((v) => Math.round(v * 1000) / 1000);
       filteredElement[0].position = position;
       filteredElement[0].rotate = rotate;
       filteredElement[0].scale = scale;
     },
+    attachGroupComponents: (
+      state,
+      action: PayloadAction<{ elementIds: number[] }>
+    ) => {},
+    detachGroupComponents: (
+      state,
+      action: PayloadAction<{ groupIds: number[] }>
+    ) => {},
   },
 });
 
 const { reducer, actions } = prismSlice;
 export const {
   setTransformControlsMode,
+
   toggleOrbitControl,
+
   addNewComponent,
   deleteFocusedComponent,
+
   focusComponent,
   outFocusComponent,
+
+  setGroupSelectionMode,
+  addGroupSelectionElementsIfEnabled: addGroupSelectionElements,
+  removeGroupSelectionElementsIfEnabled: removeGroupSelectionElements,
+
   updateFocusedComponentPosition,
   updateFocusedComponent,
+
+  attachGroupComponents,
+  detachGroupComponents,
 } = actions;
 
 export default reducer;

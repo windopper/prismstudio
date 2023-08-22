@@ -1,14 +1,16 @@
 import { TransformControls, useHelper } from "@react-three/drei";
-import React, { forwardRef, useCallback, useRef } from "react";
-import { useDispatch } from "react-redux";
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { BoxHelper, Color, Event, Mesh, Vector3 } from "three";
 import { focusComponent, updateFocusedComponentPosition } from "./prismSlice";
 import { toggleOrbitControl } from "./prismSlice";
+import { RootState } from "../../store";
 
-const TRANSLATION_SNAP = 0.0625
+const TRANSLATION_SNAP = 0.03125
 
 interface Prop {
   id: number;
+  //position: number[]
   enableTransformControl: boolean;
   transformControlsMode: any;
 }
@@ -43,7 +45,6 @@ const BoxWithTransformControls = React.memo((props: Prop) => {
         onChange={updatePosition}
         translationSnap={TRANSLATION_SNAP}
         mode={transformControlsMode}
-        
         ref={controlRef}
       >
         <BoxMesh id={id} ref={boxRef} />
@@ -52,7 +53,7 @@ const BoxWithTransformControls = React.memo((props: Prop) => {
   );
 });
 
-const BoxMesh = forwardRef(({ id }: any, ref: any) => {
+const BoxMesh = React.memo(forwardRef(({ id }: any, ref: any) => {
   const dispatch = useDispatch();
   const onFocus = useCallback(() => {
     dispatch(focusComponent({ id }));
@@ -66,6 +67,6 @@ const BoxMesh = forwardRef(({ id }: any, ref: any) => {
       <meshStandardMaterial color={"yellow"} />
     </mesh>
   );
-});
+}));
 
 export default BoxWithTransformControls;

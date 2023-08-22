@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { outFocusComponent, setTransformControlsMode } from "../prismSlice";
+import { outFocusComponent, setGroupSelectionMode, setTransformControlsMode } from "../prismSlice";
 
 export default function usePrismKeyEvent() {
   const dispatch = useDispatch();
@@ -8,7 +8,8 @@ export default function usePrismKeyEvent() {
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const key: string = e.key;
-      if (key == "Escape") dispatch(outFocusComponent());
+      if (key === "Escape") dispatch(outFocusComponent());
+      else if(key === 'Shift') dispatch(setGroupSelectionMode({enabled: true}))
       else if(key === "r") dispatch(setTransformControlsMode({mode: 'rotate'}))
       else if(key === "t") dispatch(setTransformControlsMode({mode: 'translate'}))
       else if(key === "s") dispatch(setTransformControlsMode({mode: 'scale'}))
@@ -16,10 +17,20 @@ export default function usePrismKeyEvent() {
     [dispatch]
   );
 
+  const onKeyUp = useCallback(
+    (e: KeyboardEvent) => {
+      const key: string = e.key;
+      if(key === 'Shift') dispatch(setGroupSelectionMode({enabled: false}))
+    },
+    [dispatch]
+  );
+
   useEffect(() => {
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp)
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
     };
   }, []);
 }
