@@ -5,6 +5,7 @@ import { BoxHelper, Color, Event, Mesh, Vector3 } from "three";
 import { focusComponent, updateFocusedComponentPosition } from "./prismSlice";
 import { toggleOrbitControl } from "./prismSlice";
 import { RootState } from "../../store";
+import BoxMesh from "./BoxMesh";
 
 const TRANSLATION_SNAP = 0.03125
 
@@ -13,10 +14,12 @@ interface Prop {
   //position: number[]
   enableTransformControl: boolean;
   transformControlsMode: any;
+  isGrouped: boolean,
 }
 
+// TODO 단일 컴포넌트 목적이 아닌 그룹 컴포넌트도 사용할 수 있도록 children prop을 사용해야함
 const BoxWithTransformControls = React.memo((props: Prop) => {
-  const { id, enableTransformControl, transformControlsMode } = props;
+  const { id, enableTransformControl, transformControlsMode, isGrouped } = props;
   const dispatch = useDispatch();
   const boxRef = useRef<Mesh>(null!);
   const controlRef = useRef<any>();
@@ -47,26 +50,12 @@ const BoxWithTransformControls = React.memo((props: Prop) => {
         mode={transformControlsMode}
         ref={controlRef}
       >
-        <BoxMesh id={id} ref={boxRef} />
+        <BoxMesh id={id} isGrouped={isGrouped} ref={boxRef} />
       </TransformControls>
     </>
   );
 });
 
-const BoxMesh = React.memo(forwardRef(({ id }: any, ref: any) => {
-  const dispatch = useDispatch();
-  const onFocus = useCallback(() => {
-    dispatch(focusComponent({ id }));
-  }, [dispatch, id]);
 
-  useHelper(ref, BoxHelper, Color.NAMES.gray);
-
-  return (
-    <mesh onClick={onFocus} ref={ref} position={[0.5, 0.5, 0.5]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={"yellow"} />
-    </mesh>
-  );
-}));
 
 export default BoxWithTransformControls;

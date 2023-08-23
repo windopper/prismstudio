@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { Action, PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { store } from "../../store";
 
 let currentId = 0;
@@ -10,11 +10,6 @@ export interface ElementState {
   scale: number[];
 }
 
-export interface GroupElementState {
-  id: number;
-  elements: ElementState[];
-}
-
 function createElementState(): ElementState {
   return {
     id: currentId++,
@@ -22,6 +17,18 @@ function createElementState(): ElementState {
     rotate: [0, 0, 0],
     scale: [0, 0, 0],
   };
+}
+
+export interface GroupElementState {
+  id: number;
+  elements: ElementState[];
+}
+
+function createGroupElementState(): GroupElementState {
+  return {
+    id: currentId++,
+    elements: []
+  }
 }
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
@@ -76,22 +83,23 @@ const prismSlice = createSlice({
     ) => {
       state.enableGroupSelection = action.payload.enabled;
     },
-    addGroupSelectionElementsIfEnabled: (
-      state,
-      action: PayloadAction<{ elementId: number }>
-    ) => {
+    toggleGroupSelectionElements: (
+      state, 
+      action: PayloadAction<{elementId: number}>
+    )  => {
       if (!state.enableGroupSelection) return;
-      state.currentGroupSelectionElements.push(action.payload.elementId);
-    },
-    removeGroupSelectionElementsIfEnabled: (
-      state,
-      action: PayloadAction<{ elementId: number }>
-    ) => {
-      if (!state.enableGroupSelection) return;
-      state.currentGroupSelectionElements =
+      let result: number | undefined = state.currentGroupSelectionElements.find(
+        (v) => v === action.payload.elementId
+      );
+      if (result === undefined) {
+        state.currentGroupSelectionElements.push(action.payload.elementId);
+      }
+      else {
+        state.currentGroupSelectionElements =
         state.currentGroupSelectionElements.filter(
           (v) => action.payload.elementId !== v
         );
+      }
     },
     updateFocusedComponentPosition: (
       state,
@@ -128,8 +136,22 @@ const prismSlice = createSlice({
     },
     attachGroupComponents: (
       state,
-      action: PayloadAction<{ elementIds: number[] }>
-    ) => {},
+    ) => {
+      const groupElement: GroupElementState = createGroupElementState();
+      let grouppedElements: ElementState[] = [];
+
+      for (let elementId of state.currentGroupSelectionElements) {
+        const isSameElementId = (v: ElementState) => {
+          return v.id === elementId
+        };
+        const index = state.elements.findIndex(isSameElementId);
+        grouppedElements.push(state.elements[index])
+        state.elements = state.elements.filter((_, i) => i === index);
+      }
+
+      groupElement.elements.concat(grouppedElements)
+      state.groupElements.push(groupElement);
+    },
     detachGroupComponents: (
       state,
       action: PayloadAction<{ groupIds: number[] }>
@@ -150,8 +172,7 @@ export const {
   outFocusComponent,
 
   setGroupSelectionMode,
-  addGroupSelectionElementsIfEnabled: addGroupSelectionElements,
-  removeGroupSelectionElementsIfEnabled: removeGroupSelectionElements,
+  toggleGroupSelectionElements,
 
   updateFocusedComponentPosition,
   updateFocusedComponent,

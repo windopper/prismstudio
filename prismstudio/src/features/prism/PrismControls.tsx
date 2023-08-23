@@ -7,7 +7,7 @@ import { Group } from "three";
 import GroupBoxWithTransformControls from "./GroupBoxWithTransformControls";
 
 export default function PrismControls() {
-  const { transformControlsMode, orbitControlState, elements, focusOn, groupElements } =
+  const { transformControlsMode, orbitControlState, elements, focusOn, groupElements, currentGroupSelectionElements } =
     useSelector((state: RootState) => {
       return state.prismSlice;
     });
@@ -15,12 +15,14 @@ export default function PrismControls() {
   return (
     <>
       {elements.map((v: ElementState, i: number) => {
+        let isGrouped: number | undefined = currentGroupSelectionElements.find(_v => _v === v.id);
         return (
           <BoxWithTransformControls
             key={v.id}
             id={v.id}
             enableTransformControl={v.id === focusOn}
             transformControlsMode={transformControlsMode}
+            isGrouped={isGrouped !== undefined}
           />
         );
       })}
