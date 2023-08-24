@@ -1,13 +1,13 @@
-import { Action, PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import { store } from "../../store";
 
 let currentId = 0;
 
 export interface ElementState {
   id: number;
-  position: number[];
-  rotate: number[];
-  scale: number[];
+  position: [x: number, y: number, z: number];
+  rotate: [x: number, y: number, z: number];
+  scale: [x: number, y: number, z: number];
 }
 
 function createElementState(): ElementState {
@@ -103,23 +103,25 @@ const prismSlice = createSlice({
     },
     updateFocusedComponentPosition: (
       state,
-      action: PayloadAction<{ position: number[] }>
+      action: PayloadAction<{ position: [x: number, y: number, z: number]; }>
     ) => {
       if (state.focusOn == undefined) return;
       const filteredElement: ElementState[] = state.elements.filter(
         (_, i) => i === state.focusOn
       );
       if (filteredElement.length == 0) return;
-      let position = action.payload.position;
-      position = position.map((v) => Math.round(v * 1000) / 1000);
+      let position: [x: number, y: number, z: number] = action.payload.position;
+      position = position.map((v) => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number]; 
       filteredElement[0].position = position;
+
+      console.log(position);
     },
     updateFocusedComponent: (
       state,
       action: PayloadAction<{
-        position: number[];
-        scale: number[];
-        rotate: number[];
+        position: [x: number, y: number, z: number],
+        scale: [x: number, y: number, z: number],
+        rotate: [x: number, y: number, z: number],
       }>
     ) => {
       if (state.focusOn == undefined) return;
@@ -129,7 +131,7 @@ const prismSlice = createSlice({
       if (filteredElement.length == 0) return;
 
       let { position, rotate, scale } = action.payload;
-      position = position.map((v) => Math.round(v * 1000) / 1000);
+      position = position.map((v) => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
       filteredElement[0].position = position;
       filteredElement[0].rotate = rotate;
       filteredElement[0].scale = scale;
@@ -138,19 +140,21 @@ const prismSlice = createSlice({
       state,
     ) => {
       const groupElement: GroupElementState = createGroupElementState();
-      let grouppedElements: ElementState[] = [];
+      let elements: ElementState[] = [];
 
       for (let elementId of state.currentGroupSelectionElements) {
         const isSameElementId = (v: ElementState) => {
           return v.id === elementId
         };
         const index = state.elements.findIndex(isSameElementId);
-        grouppedElements.push(state.elements[index])
-        state.elements = state.elements.filter((_, i) => i === index);
+        elements.push(current(state.elements[index]))
+        state.elements = state.elements.filter((_, i) => i !== index);
       }
 
-      groupElement.elements.concat(grouppedElements)
+      groupElement.elements = elements;
       state.groupElements.push(groupElement);
+
+      state.currentGroupSelectionElements = []
     },
     detachGroupComponents: (
       state,
