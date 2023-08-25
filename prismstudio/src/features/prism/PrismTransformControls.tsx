@@ -1,5 +1,5 @@
 import { TransformControls } from "@react-three/drei";
-import React, { useCallback, useRef } from "react";
+import React, { forwardRef, useCallback, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { Event } from "three";
 import {
@@ -9,22 +9,21 @@ import {
 const TRANSLATION_SNAP = 0.03125;
 
 export interface PrismTransformControlsProps {
-  enableTransformControl?: boolean;
-  transformControlsMode?: any;
-  children?: any;
-  onUpdate?: (e: Event | undefined) => void;
+  focusOn: number | undefined,
+  transformControlsMode?: any,
+  onUpdate?: (e: Event | undefined) => void,
 }
 
-const PrismTransformControls = React.memo(
-  (props: PrismTransformControlsProps) => {
+const PrismTransformControls = React.memo(forwardRef(
+  (props: PrismTransformControlsProps, ref: any) => {
     const {
-      enableTransformControl,
+      focusOn,
       transformControlsMode,
-      children,
       onUpdate,
     } = props;
     const dispatch = useDispatch();
-    const controlRef = useRef<any>();
+
+    console.log('update')
 
     const stopOrbitControls = useCallback(() => {
       dispatch(toggleOrbitControl(false));
@@ -36,20 +35,18 @@ const PrismTransformControls = React.memo(
 
     return (
       <>
+      {focusOn != undefined ?
         <TransformControls
-          size={enableTransformControl ? 1 : 0}
           onMouseDown={stopOrbitControls}
           onMouseUp={startOrbitControls}
-          onChange={onUpdate}
+          // onUpdate={console.log}
+          //onChange={console.log}
           translationSnap={TRANSLATION_SNAP}
           mode={transformControlsMode}
-          ref={controlRef}
-        >
-          {children}
-        </TransformControls>
-      </>
+          ref={ref}
+        /> : null}</>
     );
   }
-);
+));
 
 export default PrismTransformControls;

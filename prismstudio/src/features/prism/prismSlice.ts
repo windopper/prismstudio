@@ -153,8 +153,8 @@ const prismSlice = createSlice({
 
       groupElement.elements = elements;
       state.groupElements.push(groupElement);
-
       state.currentGroupSelectionElements = []
+      state.focusOn = groupElement.id;
     },
     detachGroupComponents: (
       state,

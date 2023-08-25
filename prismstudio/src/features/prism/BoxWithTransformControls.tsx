@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { forwardRef, useCallback, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { Event, Mesh, Vector3 } from "three";
 import {
@@ -16,16 +16,14 @@ interface BoxWithTransformControlsProps extends PrismTransformControlsProps {
   isGrouped: boolean;
 }
 
-const BoxWithTransformControls = React.memo(
-  (props: BoxWithTransformControlsProps) => {
-    const { enableTransformControl, isGrouped, id, transformControlsMode } =
+const BoxWithTransformControls = React.memo(forwardRef(
+  (props: BoxWithTransformControlsProps, ref: any) => {
+    const { isGrouped, id, transformControlsMode } =
       props;
     const dispatch = useDispatch();
 
-    const boxRef = useRef<Mesh>(null!);
-
     const updatePosition = (e: Event | undefined) => {
-      const parent = boxRef.current.parent;
+      const parent = ref?.current?.parent;
       const vector3: Vector3 = parent?.position!;
       const position: [x: number, y: number, z: number] = [
         vector3.x,
@@ -41,15 +39,15 @@ const BoxWithTransformControls = React.memo(
     }, [dispatch, id]);
 
     return (
-      <PrismTransformControls
-        enableTransformControl={enableTransformControl}
-        onUpdate={updatePosition}
-        transformControlsMode={transformControlsMode}
-      >
-        <BoxMesh isGrouped={isGrouped} id={id} ref={boxRef} onFocus={onFocus} />
-      </PrismTransformControls>
+      // <PrismTransformControls
+      //   enableTransformControl={enableTransformControl}
+      //   onUpdate={updatePosition}
+      //   transformControlsMode={transformControlsMode}
+      // >
+      // </PrismTransformControls>
+      <BoxMesh isGrouped={isGrouped} id={id} ref={ref} onFocus={onFocus} />
     );
   }
-);
+));
 
 export default BoxWithTransformControls;

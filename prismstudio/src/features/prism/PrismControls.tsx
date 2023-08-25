@@ -1,10 +1,13 @@
 import { OrbitControls, TransformControls } from "@react-three/drei";
 import BoxWithTransformControls from "./BoxWithTransformControls";
-import { useSelector } from "react-redux";
-import { ElementState, GroupElementState } from "./prismSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { ElementState, GroupElementState, focusComponent, toggleGroupSelectionElements } from "./prismSlice";
 import { RootState } from "../../store";
-import { Group } from "three";
+import { Group, Mesh } from "three";
 import GroupBoxWithTransformControls from "./GroupBoxWithTransformControls";
+import { useCallback, useEffect, useRef } from "react";
+import PrismTransformControls from "./PrismTransformControls";
+import BoxMesh from "./BoxMesh";
 
 export default function PrismControls() {
   const {
@@ -18,33 +21,49 @@ export default function PrismControls() {
     return state.prismSlice;
   });
 
+  const focusRef = useRef<Mesh>(null!);
+  const controlRef = useRef<any>(null!);
+  
+  useEffect(() => {
+    controlRef.current?.attach(focusRef.current);
+  }, [focusOn])
+
   return (
     <>
       {elements.map((v: ElementState, i: number) => {
         let isGrouped: number | undefined = currentGroupSelectionElements.find(
           (_v) => _v === v.id
         );
+        // return (
+        //   <BoxWithTransformControls
+        //     key={v.id}
+        //     id={v.id}
+        //     enableTransformControl={v.id === focusOn}
+        //     transformControlsMode={transformControlsMode}
+        //     isGrouped={isGrouped !== undefined}
+        //   />
+        // );
         return (
-          <BoxWithTransformControls
+          <BoxMesh
+            isGrouped={isGrouped !== undefined}
+            ref={v.id === focusOn ? focusRef : null}
             key={v.id}
             id={v.id}
-            enableTransformControl={v.id === focusOn}
-            transformControlsMode={transformControlsMode}
-            isGrouped={isGrouped !== undefined}
           />
         );
       })}
-      {groupElements.map((v: GroupElementState, i: number) => {
+      {/* {groupElements.map((v: GroupElementState, i: number) => {
         return (
           <GroupBoxWithTransformControls
-            key={v.id} 
+            key={v.id}
             groupId={v.id}
             elements={v.elements}
             enableTransformControl={v.id === focusOn}
             transformControlsMode={transformControlsMode}
           />
         );
-      })}
+      })} */}
+      <PrismTransformControls focusOn={focusOn} ref={controlRef}/>
       <OrbitControls enableDamping={false} enabled={orbitControlState} />
     </>
   );

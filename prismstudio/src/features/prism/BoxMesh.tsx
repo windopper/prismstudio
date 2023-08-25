@@ -7,22 +7,26 @@ import { focusComponent, toggleGroupSelectionElements } from "./prismSlice";
 interface Prop {
   id: number;
   isGrouped: boolean;
-  position?: [x: number, y: number, z: number];
   onFocus?: () => void;
 }
 
 const BoxMesh = React.memo(
   forwardRef((props: Prop, ref: any) => {
-    const { id, isGrouped, onFocus, position } = props;
+    const { id, isGrouped } = props;
     const dispatch = useDispatch();
 
     useHelper(ref, BoxHelper, Color.NAMES.gray);
-    console.log(position);
+
+    const onFocus = useCallback(() => {
+      dispatch(focusComponent({ id }));
+      dispatch(toggleGroupSelectionElements({ elementId: id }));
+    }, [dispatch, id]);
+
     return (
       <mesh
         onClick={onFocus}
         ref={ref}
-        position={position === undefined ? [0.5, 0.5, 0.5] : position!}
+        position={[0.5, 0.5, 0.5]}
       >
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color={isGrouped ? "#022b6e" : "#0050d1"} />

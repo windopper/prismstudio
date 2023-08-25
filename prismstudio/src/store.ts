@@ -15,6 +15,7 @@ export const store = configureStore({
         testSlice,
         prismSlice,
     },
+    devTools: process.env.NODE_ENV !== 'production',
     // middleware(getDefaultMiddleware) {
     //     getDefaultMiddleware().concat(loggerMiddleware)
     // },
