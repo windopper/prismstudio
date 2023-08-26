@@ -20,6 +20,7 @@ function Prism() {
         <axesHelper args={[-100]} />
         <axesHelper args={[100]} />
         <PrismControls />
+        
       </Canvas>
     </>
   );

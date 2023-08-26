@@ -13,7 +13,7 @@ import ElementItem from "./ElementItem";
 export default function ConfigurePanel() {
   const dispatch = useDispatch();
 
-  const { elements, focusOn, groupElements } = useSelector((state: RootState) => {
+  const { elementStates, focusOn } = useSelector((state: RootState) => {
     return state.prismSlice;
   });
 
@@ -52,13 +52,8 @@ export default function ConfigurePanel() {
         </button>
       </div>
       <DropDown dropDownName="components" defaultOpenState={true}>
-        {elements.map((v: ElementState, i) => {
+        {elementStates.map((v: ElementState, i) => {
           return <ElementItem state={v} isFocused={focusOn === v.id} key={v.id}/>;
-        })}
-      </DropDown>
-      <DropDown dropDownName="group Components" defaultOpenState={true}>
-        {groupElements.map((v) => {
-          return "hello world"
         })}
       </DropDown>
     </div>
