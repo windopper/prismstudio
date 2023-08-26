@@ -78,23 +78,23 @@ const prismSlice = createSlice({
       state.components.push(newComponent);
     },
     deleteFocusedComponent: (state) => {
-      const components = current(
-        state.components.filter((v) => v.id === state.focusOn)
+      const component = current(
+        state.components.find((v) => v.id === state.focusOn)
       );
-      if (components.length === 0) return;
+      if (component === undefined) return;
 
-      const component: Component = components[0];
-      const newElementStates = [] as ElementState[];
+      const newComponents = [] as Component[];
 
       for (let elementState of state.elementStates) {
-        for (let elementId of component.elementIds) {
-          if (elementState.id === elementId) continue;
-        }
-        newElementStates.push(elementState);
+        if (elementState.currentComponentId !== state.focusOn) continue;
+        const newComponent = createGroupElements();
+        newComponent.elementIds.push(elementState.id);
+        elementState.currentComponentId = newComponent.id;
+        newComponents.push(newComponent);
       }
 
-      state.components = state.components.filter((v) => v.id === state.focusOn);
-      state.elementStates = newElementStates;
+      state.components = state.components.filter((v) => v.id !== state.focusOn);
+      state.components = state.components.concat(newComponents)
       state.focusOn = undefined;
     },
     focusComponent: (state, action: PayloadAction<{ id: ComponentId }>) => {
