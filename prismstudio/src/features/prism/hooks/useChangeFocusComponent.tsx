@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 const useChangeFocusComponent = (
   focusOn: number | undefined,
   focusedComponent: Component | undefined,
-  elementRefs: React.MutableRefObject<Mesh[]>
+  elementRefs: React.MutableRefObject<Map<number, Mesh>>
 ) => {
   const controlRef = useRef<any>(null);
   const { scene } = useThree();
@@ -17,6 +17,9 @@ const useChangeFocusComponent = (
     if (focusOn === undefined) return;
     if (focusedComponent?.elementIds === undefined) return;
 
+    const control = controlRef.current;
+    const elements = new Map(elementRefs.current);
+
     /* 새로운 그룹을 생성 및 scene에 추가 */
     const elementGroup = new Group();
     const wrapperGroup = new Group();
@@ -24,10 +27,11 @@ const useChangeFocusComponent = (
     scene.add(wrapperGroup);
 
     const controlPosition: [x: number, y: number, z: number] = [999, 999, 999];
-    
+
     /* 선택된 요소에 대하여 controlPosition 계산 및 그룹에 요소 추가 */
     for (let elementId of focusedComponent?.elementIds) {
-      const element = elementRefs.current[elementId];
+      const element = elements.get(elementId);
+      if (element === undefined) continue;
       elementGroup.add(element);
       const elementPosition = element.getWorldPosition(new Vector3());
       if (controlPosition[0] > elementPosition.x - 0.5)
@@ -43,16 +47,16 @@ const useChangeFocusComponent = (
     scene.add(box);
     wrapperGroup.add(elementGroup);
     wrapperGroup.add(box);
-    controlRef.current.attach(wrapperGroup);
-    controlRef.current.position.set(...controlPosition);
+    control.attach(wrapperGroup);
+    control.position.set(...controlPosition);
 
     const onDraggingChanged = (event: THREE.Event) => {
       if (event.target?.dragging) return;
       const updatingElementStates: any[] = [];
       for (let elementId of focusedComponent?.elementIds) {
-        let worldElement = elementRefs.current[elementId]
+        let worldElement = elements.get(elementId);
         if (worldElement === undefined) continue;
-        
+
         let elementPosition = worldElement?.getWorldPosition(new Vector3());
         let elementEuler = new Euler().setFromQuaternion(
           worldElement?.getWorldQuaternion(new Quaternion())
@@ -69,39 +73,36 @@ const useChangeFocusComponent = (
       dispatch(updateElementStates(updatingElementStates));
     };
 
-    controlRef.current?.addEventListener("change", (event: THREE.Event) => {
-      //console.log(event.target);
-    });
-    controlRef.current?.addEventListener("dragging-changed", onDraggingChanged);
+    const onChange = (event: THREE.Event) => {};
+
+    control?.addEventListener("change", onChange);
+    control?.addEventListener("dragging-changed", onDraggingChanged);
 
     return () => {
-      controlRef.current?.removeEventListener(
-        "dragging-changed",
-        onDraggingChanged
-      );
+      control?.removeEventListener("dragging-changed", onDraggingChanged);
+      control?.removeEventListener("change", onChange);
 
       for (let elementId of focusedComponent?.elementIds) {
-        let worldElement = scene.getObjectById(
-          elementRefs.current[elementId].id
-        );
+        let worldElement = elements.get(elementId);
+        if (worldElement === undefined) continue;
         let elementPosition = worldElement?.getWorldPosition(new Vector3());
         let elementQuaternion = worldElement?.getWorldQuaternion(
           new Quaternion()
         );
         let elementScale = worldElement?.getWorldScale(new Vector3());
-        elementRefs.current[elementId].removeFromParent();
-        scene.add(elementRefs.current[elementId]);
+        worldElement?.removeFromParent();
+        scene.add(worldElement);
 
         worldElement?.position.copy(elementPosition!);
         worldElement?.quaternion.copy(elementQuaternion!);
         worldElement?.scale.copy(elementScale!);
       }
-      if (focusOn === undefined) controlRef.current?.dispose();
+      if (focusOn === undefined) control?.dispose();
       scene.remove(elementGroup);
       scene.remove(wrapperGroup);
       scene.remove(box);
     };
-  }, [focusOn]);
+  }, [focusOn, focusedComponent]);
 
   return { controlRef };
 };

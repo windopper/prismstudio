@@ -7,21 +7,13 @@ import { RootState } from "../../store";
 
 interface Prop {
   elementId: number;
+  componentId: number,
   onFocus?: () => void;
 }
 
 const BoxMesh = React.memo(
   forwardRef((props: Prop, ref: any) => {
-    const { elementId } = props;
-    const { componentId } = useSelector((state: RootState) => {
-      const elementState = state.prismSlice.elementStates.find(
-        (v) => v.id === elementId
-      );
-
-      return {
-        componentId: elementState?.currentComponentId
-      }
-    });
+    const { elementId, componentId } = props;
 
     const isGrouped = useSelector(
       (state: RootState) =>
@@ -30,9 +22,13 @@ const BoxMesh = React.memo(
         ) !== -1
     );
 
+    const isFocus = useSelector(
+      (state: RootState) => state.prismSlice.focusOn === componentId
+    )
+
     const dispatch = useDispatch();
 
-    useHelper(ref, BoxHelper, Color.NAMES.gray);
+    useHelper(ref, BoxHelper, Color.NAMES.aquamarine);
 
     const onFocus = useCallback(() => {
       componentId && dispatch(focusComponent({ id: componentId }));
@@ -46,7 +42,7 @@ const BoxMesh = React.memo(
     return (
       <mesh onClick={onFocus} ref={ref} position={[0.5, 0.5, 0.5]}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={isGrouped ? "#e7e7e7" : "#0050d1"} />
+        <meshStandardMaterial color={isGrouped ? "#e7e7e7" : "#0050d1"} opacity={isFocus ? 0.5 : 1} transparent={true} />
       </mesh>
     );
   })

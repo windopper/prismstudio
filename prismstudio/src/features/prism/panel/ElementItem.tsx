@@ -3,22 +3,21 @@ import { ElementState, focusComponent } from '../prismSlice'
 import { useDispatch } from 'react-redux';
 
 export interface ElementItemProp {
-    state: ElementState,
+    elementState: ElementState,
     isFocused: boolean,
 }
 
-export default function ElementItem({state, isFocused}: ElementItemProp) {
+export default function ElementItem({elementState, isFocused}: ElementItemProp) {
   const dispatch = useDispatch();
 
   const focusElementItem = () => {
-    dispatch(focusComponent({id: state.id}))
+    dispatch(focusComponent({id: elementState.currentComponentId}))
   }
 
   return (
-    <div className={`flex flex-row hover:opacity-75 ${isFocused && 'prism-component-text-color'}`} onClick={focusElementItem}>
-        <div>▲</div>
-        <div>component</div>
-        <div>{state.position}</div>
+    <div className={`flex flex-row hover:opacity-75 ${isFocused && 'prism-component-text-color'} hover:cursor-pointer`} onClick={focusElementItem}>
+        <div>▲ </div>
+        <div>component-{elementState.id}</div>
     </div>
   )
 }

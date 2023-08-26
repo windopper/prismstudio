@@ -11,22 +11,20 @@ export default function PrismControls() {
     orbitControlState,
     elementStates
   } = useSelector((state: RootState) => {
-    return {
-      orbitControlState : state.prismSlice.orbitControlState,
-      elementStates: state.prismSlice.elementStates
-    }
+    return state.prismSlice;
   });
 
-  const elementRefs = useRef<any[]>([]);
+  const elementRefs = useRef<Map<number, any>>(new Map());
 
   return (
     <>
       {elementStates.map((v: ElementState, i: number) => {
         return (
           <BoxMesh
-            ref={elem => (elementRefs.current[v.id] = elem)}
+            ref={elem => (elementRefs.current.set(v.id, elem))}
             key={v.id}
             elementId={v.id}
+            componentId={v.currentComponentId}
           />
         );
       })}

@@ -30,7 +30,7 @@ export interface Component {
   elementIds: ElementId[];
 }
 
-function createGroupElements(): Component {
+function createGroupComponent(): Component {
   return {
     id: currentId++,
     elementIds: [] as ElementId[],
@@ -71,7 +71,7 @@ const prismSlice = createSlice({
     // 새로운 컴포넌트 생성
     addNewComponent: (state) => {
       const newElementState = createElementState();
-      const newComponent = createGroupElements();
+      const newComponent = createGroupComponent();
       newComponent.elementIds.push(newElementState.id);
       newElementState.currentComponentId = newComponent.id;
       state.elementStates.push(newElementState);
@@ -83,18 +83,8 @@ const prismSlice = createSlice({
       );
       if (component === undefined) return;
 
-      const newComponents = [] as Component[];
-
-      for (let elementState of state.elementStates) {
-        if (elementState.currentComponentId !== state.focusOn) continue;
-        const newComponent = createGroupElements();
-        newComponent.elementIds.push(elementState.id);
-        elementState.currentComponentId = newComponent.id;
-        newComponents.push(newComponent);
-      }
-
       state.components = state.components.filter((v) => v.id !== state.focusOn);
-      state.components = state.components.concat(newComponents)
+      state.elementStates = state.elementStates.filter(v => v.currentComponentId !== state.focusOn);
       state.focusOn = undefined;
     },
     focusComponent: (state, action: PayloadAction<{ id: ComponentId }>) => {
@@ -148,14 +138,13 @@ const prismSlice = createSlice({
           y: number,
           z: number
         ];
-        //console.log(position);
         state.elementStates[elementStateIndex].position = position;
         state.elementStates[elementStateIndex].rotate = rotate;
         state.elementStates[elementStateIndex].scale = scale;
       }
     },
     attachGroupComponents: (state) => {
-      const newComponent: Component = createGroupElements();
+      const newComponent: Component = createGroupComponent();
       const newElementIds = [];
 
       // 그룹핑 된 컴포넌트를 하나의 컴포넌트로 합친 후 요소 상태를 갱신하기
@@ -185,8 +174,43 @@ const prismSlice = createSlice({
     },
     detachGroupComponents: (
       state,
-      action: PayloadAction<{ groupIds: number[] }>
-    ) => {},
+    ) => {
+      const component = state.components.find(v => v.id === state.focusOn);
+      if (component === undefined ) return;
+      const newComponents = [];
+
+      for (let elementId of component.elementIds) {
+        const elementState = state.elementStates.find(v => v.id === elementId);
+        if (elementState === undefined) continue;
+        const newComponent = createGroupComponent();
+        newComponent.elementIds.push(elementId);
+        elementState.currentComponentId = newComponent.id;
+        newComponents.push(newComponent);
+      }
+
+      state.components = state.components.filter(v => v.id !== state.focusOn);
+      state.components = state.components.concat(newComponents);
+      state.focusOn = undefined;
+    },
+    detachComponentFromGroup: (
+      state,
+      action: PayloadAction<{elementId: number}>
+    ) => {
+      const { elementId } = action.payload;
+    
+      const elementState = state.elementStates.find(v => v.id === elementId);
+      if (elementState === undefined) return;
+      const groupComponent = state.components.find(v => v.id === elementState.currentComponentId);
+      if (groupComponent === undefined) return;
+
+      if (groupComponent.elementIds.length == 1) return;
+
+      groupComponent.elementIds = groupComponent.elementIds.filter(id => id !== elementId);
+      const newComponent = createGroupComponent();
+      elementState.currentComponentId = newComponent.id;
+      newComponent.elementIds.push(elementState.id);
+      state.components.push(newComponent);
+    }
   },
 });
 
@@ -209,6 +233,7 @@ export const {
 
   attachGroupComponents,
   detachGroupComponents,
+  detachComponentFromGroup,
 } = actions;
 
 export default reducer;

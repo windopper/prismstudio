@@ -1,20 +1,17 @@
 import { TransformControls } from "@react-three/drei";
-import React, { forwardRef, useCallback, useEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { Box3Helper, BoxHelper, Event, Group, Mesh, Quaternion, Vector3 } from "three";
+import { Event, Mesh } from "three";
 import {
-  Component,
   toggleOrbitControl,
-  updateElementStates,
 } from "./prismSlice";
 import { RootState } from "../../store";
-import { useThree } from "@react-three/fiber";
 import useChangeFocusComponent from "./hooks/useChangeFocusComponent";
 
 const TRANSLATION_SNAP = 0.03125;
 
 export interface PrismTransformControlsProps {
-  elementRefs: React.MutableRefObject<Mesh[]>,
+  elementRefs: React.MutableRefObject<Map<number, Mesh>>,
   onUpdate?: (e: Event | undefined) => void,
 }
 
@@ -35,7 +32,7 @@ const PrismTransformControls = React.memo(
         focusOn,
         focusedComponent,
       }
-    }, shallowEqual)
+    })
 
     const { controlRef } = useChangeFocusComponent(focusOn, focusedComponent, elementRefs)
 
@@ -49,7 +46,7 @@ const PrismTransformControls = React.memo(
 
     return (
       <>
-      {focusOn != undefined ?
+      {focusOn !== undefined ?
         <TransformControls
           onMouseDown={stopOrbitControls}
           onMouseUp={startOrbitControls}
