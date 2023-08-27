@@ -46,7 +46,7 @@ export default function ComponentItem({
       ) : (
         <div className="ml-2">
           <div
-            className={`mb-1 hover:cursor-pointer hover:opacity-75 ${
+            className={`mb-2 hover:cursor-pointer hover:opacity-75 ${
               isCollectionOpen && "text-green-500"
             }`}
             onClick={() => setCollectionOpen((s) => !s)}

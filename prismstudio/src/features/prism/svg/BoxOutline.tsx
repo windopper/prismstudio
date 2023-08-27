@@ -6,7 +6,7 @@ interface Prop {
 
 const BoxOutline = ({ isFocus }: Prop) => {
 
-  const color = isFocus ? "#488aef" : "gray";
+  const color = isFocus ? "#c3dbff" : "gray";
 
   return (
   <svg
