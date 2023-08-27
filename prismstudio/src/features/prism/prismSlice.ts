@@ -10,6 +10,7 @@ let currentId = 0;
 export interface ElementState {
   id: number;
   name: string,
+  isFocused: boolean,
   currentComponentId: number;
   position: [x: number, y: number, z: number];
   rotate: [x: number, y: number, z: number];
@@ -20,6 +21,7 @@ function createElementState(): ElementState {
   return {
     id: currentId++,
     name: "컴포넌트 박스",
+    isFocused: false,
     currentComponentId: -1,
     position: [0, 0, 0],
     rotate: [0, 0, 0],
@@ -39,6 +41,32 @@ function createGroupComponent(): Component {
     name: "컴포넌트 콜렉션",
     elementIds: [] as ElementId[],
   };
+}
+
+function getComponentFromId(components: Component[], id: number): Component | undefined{
+  return components.find(v => v.id === id);
+}
+
+function getElementStateFromId(elementStates: ElementState[], id: number): ElementState | undefined {
+  return elementStates.find(v => v.id === id);
+}
+
+function getComponentsFromIds(components: Component[], ids: number[]): Component[] {
+  const ret: Component[] = []
+  for (let id of ids) {
+    const component = getComponentFromId(components, id);
+    component && ret.push(component);
+  }
+  return ret;
+}
+
+function getElementStatesFromIds(elementStates: ElementState[], ids: number[]): ElementState[] {
+  const ret: ElementState[] = []
+  for (let id of ids) {
+    const elementState = getElementStateFromId(elementStates, id);
+    elementState && ret.push(elementState);
+  }
+  return ret;
 }
 
 export interface PrismState {
@@ -92,9 +120,31 @@ const prismSlice = createSlice({
       state.focusOn = undefined;
     },
     focusComponent: (state, action: PayloadAction<{ id: ComponentId }>) => {
+      if (state.focusOn !== undefined) {
+        let component = getComponentFromId(state.components, state.focusOn);
+        if (component === undefined) return;
+        let elementStates = getElementStatesFromIds(state.elementStates, component.elementIds);
+        for (const elementState of elementStates) {
+          elementState.isFocused = false;
+        }
+      }
+
       state.focusOn = action.payload.id;
+      let component = getComponentFromId(state.components, action.payload.id);
+      if (component === undefined) return;
+      let elementStates = getElementStatesFromIds(state.elementStates, component?.elementIds);
+      for (const elementState of elementStates) {
+        elementState.isFocused = true;
+      }
     },
     outFocusComponent: (state) => {
+      if (state.focusOn === undefined) return;
+      const component = getComponentFromId(state.components, state.focusOn);
+      if (component === undefined) return;
+      const elementStates = getElementStatesFromIds(state.elementStates, component.elementIds);
+      for (const elementState of elementStates) {
+        elementState.isFocused = false;
+      }
       state.focusOn = undefined;
     },
     setGroupSelectionMode: (
@@ -148,6 +198,7 @@ const prismSlice = createSlice({
       }
     },
     attachGroupComponents: (state) => {
+      if (state.currentGroupSelectionComponents.length == 0) return;
       const newComponent: Component = createGroupComponent();
       const newElementIds = [];
 

@@ -25,6 +25,7 @@ export default function PrismControls() {
             key={v.id}
             elementId={v.id}
             componentId={v.currentComponentId}
+            isFocused={v.isFocused}
           />
         );
       })}
