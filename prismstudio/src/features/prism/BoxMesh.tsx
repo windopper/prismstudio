@@ -6,41 +6,33 @@ import { focusComponent, toggleGroupSelectionElements } from "./prismSlice";
 import { RootState } from "../../store";
 
 interface Prop {
-  elementId: number;
-  componentId: number,
-  isFocused: boolean,
-  onFocus?: () => void;
+  elementId: string,
 }
 
 const BoxMesh = React.memo(
   forwardRef((props: Prop, ref: any) => {
-    const { elementId, componentId, isFocused } = props;
+    const { elementId } = props;
 
-    const isGrouped = useSelector(
-      (state: RootState) =>
-        state.prismSlice.currentGroupSelectionComponents.findIndex(
-          (v) => v.id === componentId
-        ) !== -1
-    );
-
+    const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
+    const wrapComponent = useSelector((state: RootState) => state.prismSlice.components.byId[elementState.wrapComponentId]);
     const dispatch = useDispatch();
 
-    useHelper(isFocused && ref, BoxHelper, "yellow");
+    //useHelper(isFocused && ref, BoxHelper, "yellow");
 
     const onFocus = useCallback(() => {
-      componentId && dispatch(focusComponent({ id: componentId }));
-      componentId && dispatch(
-          toggleGroupSelectionElements({
-            componentId: componentId,
-          })
-        );
-    }, [dispatch, componentId]);
+      dispatch(focusComponent({ componentId: wrapComponent.id, type: 'set' }));
+      // componentId && dispatch(
+      //     toggleGroupSelectionElements({
+      //       componentId: componentId,
+      //     })
+      //   );
+    }, [dispatch, wrapComponent]);
 
     return (
       <mesh onClick={onFocus} ref={ref} position={[0.5, 0.5, 0.5]}>
         {/* <boxHelper /> */}
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={isGrouped ? "#e7e7e7" : "#0050d1"} opacity={isFocused ? 0.5 : 1} transparent={true} />
+        <meshStandardMaterial color={wrapComponent.isFocused ? "#e7e7e7" : "#0050d1"} opacity={wrapComponent.isFocused ? 0.5 : 1} transparent={true} />
       </mesh>
     );
   })

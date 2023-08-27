@@ -11,7 +11,7 @@ import useChangeFocusComponent from "./hooks/useChangeFocusComponent";
 const TRANSLATION_SNAP = 0.03125;
 
 export interface PrismTransformControlsProps {
-  elementRefs: React.MutableRefObject<Map<number, Mesh>>,
+  elementRefs: React.MutableRefObject<Map<string, Mesh>>,
   onUpdate?: (e: Event | undefined) => void,
 }
 
@@ -24,17 +24,9 @@ const PrismTransformControls = React.memo(
 
     const dispatch = useDispatch();
 
-    const { transformControlsMode, focusOn, focusedComponent } = useSelector((state: RootState) => {
-      const { transformControlsMode, focusOn } = state.prismSlice;
-      const focusedComponent = state.prismSlice.components.find(v => v.id === focusOn);
-      return {
-        transformControlsMode,
-        focusOn,
-        focusedComponent,
-      }
-    })
+    const { transformControlsMode, focusOn } = useSelector((state) => state.prismSlice);
 
-    const { controlRef } = useChangeFocusComponent(focusOn, focusedComponent, elementRefs)
+    const { controlRef } = useChangeFocusComponent(focusOn, elementRefs)
 
     const stopOrbitControls = useCallback(() => {
       dispatch(toggleOrbitControl(false));
@@ -46,13 +38,13 @@ const PrismTransformControls = React.memo(
 
     return (
       <>
-      {focusOn !== undefined ?
+      {focusOn.length === 1 ?
         <TransformControls
           onMouseDown={stopOrbitControls}
           onMouseUp={startOrbitControls}
           // onUpdate={console.log}
           //onChange={console.log}
-          onUpdate={console.log}
+          //onUpdate={console.log}
           translationSnap={TRANSLATION_SNAP}
           rotationSnap={30 * 0.0174533}
           scaleSnap={1}

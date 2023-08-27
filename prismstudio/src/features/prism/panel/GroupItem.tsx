@@ -18,11 +18,11 @@ export default function GroupItem({
   const dispatch = useDispatch();
 
   const focusElementItem = () => {
-    dispatch(focusComponent({ id: elementState.currentComponentId }));
+    //dispatch(focusComponent({ id: elementState.currentComponentId }));
   };
 
   const onClickDetachFromGroup = () => {
-    dispatch(detachComponentFromGroup({ elementId: elementState.id }));
+    //dispatch(detachComponentFromGroup({ elementId: elementState.id }));
   };
 
   return (

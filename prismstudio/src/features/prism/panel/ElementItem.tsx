@@ -15,7 +15,7 @@ export default function ElementItem({
   const dispatch = useDispatch();
 
   const focusElementItem = () => {
-    dispatch(focusComponent({ id: elementState.currentComponentId }));
+    //dispatch(focusComponent({ id: elementState.currentComponentId }));
   };
 
   return (

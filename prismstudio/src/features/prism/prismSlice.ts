@@ -13,6 +13,7 @@ export const COMPONENT_TOP_POINTER = "component-0";
 export interface ElementState {
   id: ElementId;
   name: string,
+  wrapComponentId: ComponentId, // 감싼 컴포넌트의 아이디
   position: [x: number, y: number, z: number];
   rotate: [x: number, y: number, z: number];
   scale: [x: number, y: number, z: number];
@@ -41,6 +42,7 @@ function createElementState(): ElementState {
   return {
     id: `element-${currentId++}`,
     name: "컴포넌트 박스",
+    wrapComponentId: "component-0",
     position: [0, 0, 0],
     rotate: [0, 0, 0],
     scale: [0, 0, 0],
@@ -69,20 +71,24 @@ function createGroupComponent(): GroupComponents {
   }
 }
 
+export interface PrismNormalizedElementState {
+    "byId": {[key: string]: ElementState},
+    "allIds": ElementId[]
+}
+
+export interface PrismNormalizedComponentState {
+  "byId": {[key: string]: (GroupComponents | SingleComponent)},
+  "allIds": ComponentId[]
+}; 
+
 export interface PrismState {
   transformControlsMode: TransformControlsMode; // 컨트롤 모드 설정
   orbitControlState: boolean; // 공전 컨트롤러 활성화 여부
   focusOn: ComponentId[] // 선택한 컴포넌트 아이디 리스트
   enableGroupSelection: boolean; // 그룹 선택 기능 활성화 여부
   //currentGroupSelectionComponents: SingleComponent[]; // 현재 선택한 컴포넌트들
-  elementStates: {
-    "byId": {[key: string]: ElementState},
-    "allIds": ElementId[]
-  }; // 요소 정보들
-  components: {
-    "byId": {[key: string]: (GroupComponents | SingleComponent)},
-    "allIds": ComponentId[]
-  }; // 그룹 또는 단일 컴포넌트들
+  elementStates: PrismNormalizedElementState; // 요소 정보들
+  components: PrismNormalizedComponentState; // 그룹 또는 단일 컴포넌트들
 }
 
 const prismSlice = createSlice({
@@ -115,6 +121,7 @@ const prismSlice = createSlice({
     addNewComponent: (state) => {
       const newElementState = createElementState();
       const newSingleComponent = createSingleComponent(newElementState.id);
+      newElementState.wrapComponentId = newSingleComponent.id;
       state.elementStates.allIds.push(newElementState.id);
       state.elementStates.byId[newElementState.id] = newElementState;
       state.components.allIds.push(newSingleComponent.id);
@@ -134,7 +141,7 @@ const prismSlice = createSlice({
           /* 중간 노드에 도달하면 다음 순회에 자신의 아이디를 넣음 */
           if (component.type === 'GroupComponents') {
             component = component as GroupComponents
-            newComponentIds.push(component.id)
+            newComponentIds.push(...component.components)
             deleteComponentIds.push(component.id);
           }
           /* 리프 노드에 도달하면 자기자신과 elementState를 포함하여 제거할 리스트에 삽입 */
@@ -161,7 +168,8 @@ const prismSlice = createSlice({
       state.focusOn = [];
     },
     focusComponent: (state, action: PayloadAction<{ componentId: ComponentId, type: "set" | "add" }>) => {
-      const { componentId, type} = action.payload;
+      const { componentId, type } = action.payload;
+
       if (type === 'set') {
         let componentIds = current(state.focusOn);
 
@@ -171,12 +179,13 @@ const prismSlice = createSlice({
 
           for (let id of componentIds) {
             let component = state.components.byId[id];
+            component.isFocused = false;
 
+            /* 그룹에 속하면 하위 컴포넌트를 집어넣기 */
             if (component.type === 'GroupComponents') {
-              component = component as GroupComponents;
+              component = current(component) as GroupComponents;
               newComponentIds.push(...component.components)
             }
-            component.isFocused = false;
           }
 
           componentIds = newComponentIds;
@@ -184,18 +193,21 @@ const prismSlice = createSlice({
 
         /* 현재 선택된 컴포넌트의 isFocused를 true로 전환 */
         componentIds = [componentId];
-        while(componentId.length !== 0) {
+        while(componentIds.length !== 0) {
           let newComponentIds = [];
 
           for (let id of componentIds) {
             let component = state.components.byId[id];
-
+            
+            /* 그룹에 속하면 하위 컴포넌트를 집어넣기 */
             if (component.type === 'GroupComponents') {
               component = component as GroupComponents;
               newComponentIds.push(...component.components)
             }
             component.isFocused = true;
           }
+
+          componentIds = newComponentIds;
         }
 
         state.focusOn = [componentId];
@@ -220,7 +232,26 @@ const prismSlice = createSlice({
       }
     },
     outFocusComponent: (state) => {
+      let componentIds = current(state.focusOn);
 
+      /* 이전 focus 컴포넌트의 isFocused를 false로 전환 */
+      while(componentIds.length !== 0) {
+        let newComponentIds = [];
+
+        for (let id of componentIds) {
+          let component = state.components.byId[id];
+          component.isFocused = false;
+
+          /* 그룹에 속하면 하위 컴포넌트를 집어넣기 */
+          if (component.type === 'GroupComponents') {
+            component = current(component) as GroupComponents;
+            newComponentIds.push(...component.components)
+          }
+        }
+
+        componentIds = newComponentIds;
+      }
+      state.focusOn = [];
     },
     setGroupSelectionMode: (
       state,

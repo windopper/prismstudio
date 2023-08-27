@@ -9,7 +9,7 @@ import BoxMesh from "./BoxMesh";
 export default function PrismControls() {
   const {
     orbitControlState,
-    elementStates
+    elementStates,
   } = useSelector((state: RootState) => {
     return state.prismSlice;
   });
@@ -20,14 +20,11 @@ export default function PrismControls() {
   return (
     <>
       {allIds.map((v) => {
-        const elementState = elementStates.byId[v];
         return (
           <BoxMesh
-            ref={elem => (elementRefs.current.set(elementState.id, elem))}
-            key={elementState.id}
-            elementId={elementState.id}
-            componentId={v.currentComponentId}
-            isFocused={v.isFocused}
+            ref={elem => (elementRefs.current.set(v, elem))}
+            key={v}
+            elementId={v}
           />
         );
       })}

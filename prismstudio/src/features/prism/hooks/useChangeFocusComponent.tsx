@@ -2,23 +2,26 @@ import { useEffect, useRef } from "react";
 import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler } from "three";
 import { SingleComponent, updateElementStates } from "../prismSlice";
 import { useThree } from "@react-three/fiber";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../store";
+import { getElementIdsFromComponents } from "../utils/prismSliceUtil";
 
 const useChangeFocusComponent = (
-  focusOn: number | undefined,
-  focusedComponent: SingleComponent | undefined,
-  elementRefs: React.MutableRefObject<Map<number, Mesh>>
+  focusOn: string[],
+  elementRefs: React.MutableRefObject<Map<string, Mesh>>
 ) => {
   const controlRef = useRef<any>(null);
   const { scene } = useThree();
   const dispatch = useDispatch();
+  const { components } = useSelector((state: RootState) => state.prismSlice);
+  const focusedComponents = focusOn.map(v => components.byId[v]);
 
   useEffect(() => {
-    if (focusOn === undefined) return;
-    if (focusedComponent?.elementIds === undefined) return;
+    if (focusOn.length !== 1) return;
 
     const control = controlRef.current;
     const elements = new Map(elementRefs.current);
+    const elementIds = getElementIdsFromComponents(focusedComponents, components);
 
     /* 새로운 그룹을 생성 및 scene에 추가 */
     const elementGroup = new Group();
@@ -29,7 +32,7 @@ const useChangeFocusComponent = (
     const controlPosition: [x: number, y: number, z: number] = [999, 999, 999];
 
     /* 선택된 요소에 대하여 controlPosition 계산 및 그룹에 요소 추가 */
-    for (let elementId of focusedComponent?.elementIds) {
+    for (let elementId of elementIds) {
       const element = elements.get(elementId);
       if (element === undefined) continue;
       elementGroup.add(element);
@@ -47,13 +50,14 @@ const useChangeFocusComponent = (
     scene.add(box);
     wrapperGroup.add(elementGroup);
     wrapperGroup.add(box);
+
     control.attach(wrapperGroup);
     control.position.set(...controlPosition);
 
     const onDraggingChanged = (event: THREE.Event) => {
       if (event.target?.dragging) return;
       const updatingElementStates: any[] = [];
-      for (let elementId of focusedComponent?.elementIds) {
+      for (let elementId of elementIds) {
         let worldElement = elements.get(elementId);
         if (worldElement === undefined) continue;
 
@@ -82,7 +86,7 @@ const useChangeFocusComponent = (
       control?.removeEventListener("dragging-changed", onDraggingChanged);
       control?.removeEventListener("change", onChange);
 
-      for (let elementId of focusedComponent?.elementIds) {
+      for (let elementId of elementIds) {
         let worldElement = elements.get(elementId);
         if (worldElement === undefined) continue;
         let elementPosition = worldElement?.getWorldPosition(new Vector3());
@@ -102,7 +106,7 @@ const useChangeFocusComponent = (
       scene.remove(wrapperGroup);
       scene.remove(box);
     };
-  }, [focusOn, focusedComponent]);
+  }, [focusOn, focusedComponents]);
 
   return { controlRef };
 };

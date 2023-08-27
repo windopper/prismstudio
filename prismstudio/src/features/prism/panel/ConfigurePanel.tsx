@@ -83,9 +83,8 @@ export default function ConfigurePanel() {
           {topComponents.map((v) => {
             return (
               <ComponentItem
-                component={v}
+                componentId={v.id}
                 key={v.id}
-                isFocused={v.isFocused}
               />
             );
           })}
