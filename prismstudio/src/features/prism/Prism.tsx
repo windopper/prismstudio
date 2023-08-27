@@ -25,7 +25,7 @@ function Prism() {
         <gridHelper args={[GRID_SIZE, GRID_SIZE, 0x696969, 0x696969]} />
         <axesHelper args={[-GRID_SIZE]} />
         <axesHelper args={[GRID_SIZE]} />
-        <PrismControls />
+        {/* <PrismControls /> */}
         
       </Canvas>
     </>

@@ -14,16 +14,18 @@ export default function PrismControls() {
     return state.prismSlice;
   });
 
-  const elementRefs = useRef<Map<number, any>>(new Map());
+  const elementRefs = useRef<Map<string, any>>(new Map());
+  const { allIds } = elementStates;
 
   return (
     <>
-      {elementStates.map((v: ElementState, i: number) => {
+      {allIds.map((v) => {
+        const elementState = elementStates.byId[v];
         return (
           <BoxMesh
-            ref={elem => (elementRefs.current.set(v.id, elem))}
-            key={v.id}
-            elementId={v.id}
+            ref={elem => (elementRefs.current.set(elementState.id, elem))}
+            key={elementState.id}
+            elementId={elementState.id}
             componentId={v.currentComponentId}
             isFocused={v.isFocused}
           />

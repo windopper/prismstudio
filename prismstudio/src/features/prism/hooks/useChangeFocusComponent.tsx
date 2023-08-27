@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler } from "three";
-import { Component, updateElementStates } from "../prismSlice";
+import { SingleComponent, updateElementStates } from "../prismSlice";
 import { useThree } from "@react-three/fiber";
 import { useDispatch } from "react-redux";
 
 const useChangeFocusComponent = (
   focusOn: number | undefined,
-  focusedComponent: Component | undefined,
+  focusedComponent: SingleComponent | undefined,
   elementRefs: React.MutableRefObject<Map<number, Mesh>>
 ) => {
   const controlRef = useRef<any>(null);

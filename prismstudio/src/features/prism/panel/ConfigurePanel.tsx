@@ -2,6 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import {
+  COMPONENT_TOP_POINTER,
   ElementState,
   addNewComponent,
   attachGroupComponents,
@@ -23,7 +24,10 @@ export default function ConfigurePanel() {
     }
   );
 
-  const focusedComponent = components.find((v) => v.id === focusOn);
+  const { allIds } = components;
+
+  //const focusedComponent = components.find((v) => v.id === focusOn);
+  const topComponents = Object.values(components.byId).filter(v => v.topPointer === COMPONENT_TOP_POINTER);
 
   const onClickCreateComponent = () => {
     dispatch(addNewComponent());
@@ -76,18 +80,18 @@ export default function ConfigurePanel() {
       </PanelItemContainer>
       <PanelItemContainer>
         <DropDown dropDownName="컴포넌트" defaultOpenState={true}>
-          {components.map((v, i) => {
+          {topComponents.map((v) => {
             return (
               <ComponentItem
                 component={v}
                 key={v.id}
-                isFocused={v.id === focusOn}
+                isFocused={v.isFocused}
               />
             );
           })}
         </DropDown>
       </PanelItemContainer>
-      <PanelItemContainer>
+      {/* <PanelItemContainer>
         {focusOn && focusedComponent && (
           <DropDown dropDownName="그룹" defaultOpenState={true}>
             {focusedComponent.elementIds.map((v, i) => {
@@ -112,7 +116,7 @@ export default function ConfigurePanel() {
             <StatusItem focusedComponent={focusedComponent} />
           </DropDown>
         )}
-      </PanelItemContainer>
+      </PanelItemContainer> */}
     </div>
   );
 }

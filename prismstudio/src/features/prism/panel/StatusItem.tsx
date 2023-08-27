@@ -1,9 +1,9 @@
-import { Component } from "../prismSlice";
+import { SingleComponent } from "../prismSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 
 interface Prop {
-  focusedComponent: Component;
+  focusedComponent: SingleComponent;
 }
 
 const StatusItem = (props: Prop) => {

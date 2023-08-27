@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Component, ElementState, focusComponent } from "../prismSlice";
+import { SingleComponent, ElementState, focusComponent, GroupComponents } from "../prismSlice";
 import { useDispatch, useSelector } from "react-redux";
 import BoxOutline from "../svg/BoxOutline";
 import { RootState } from "../../../store";
 
 export interface ComponentItemProp {
-  component: Component;
+  component: SingleComponent | GroupComponents;
   isFocused: boolean;
 }
 
@@ -21,19 +21,19 @@ export default function ComponentItem({
     else if (isFocused) setCollectionOpen(true);
   }, [isFocused])
 
-  const elementStates = useSelector((state: RootState) => {
-    return state.prismSlice.elementStates.filter(
-      (v) => v.currentComponentId === component.id
-    );
+  const childComponents = useSelector((state: RootState) => {
+    return Object.values(state.prismSlice.components.byId).filter(v => v.topPointer === component.id);
   });
 
   const onFocusComponent = () => {
-    dispatch(focusComponent({ id: component.id }));
+    dispatch(focusComponent({ componentId: component.id, type: 'set' }));
   };
+
+  console.log(`${component.id} ${isFocused}`);
 
   return (
     <>
-      {elementStates.length == 1 ? (
+      {component.type === "SingleComponent" ? (
         <div
           className={`flex flex-row hover:opacity-75 ${
             isFocused && "prism-component-text-color"
@@ -41,7 +41,7 @@ export default function ComponentItem({
           onClick={onFocusComponent}
         >
           <BoxOutline isFocus={isFocused} />
-          <div>{elementStates[0].name}</div>
+          <div>{component.name}</div>
         </div>
       ) : (
         <div className="ml-2">
@@ -53,21 +53,15 @@ export default function ComponentItem({
           >
             {component.name}
           </div>
+
           {isCollectionOpen && (
             <div className="ml-2 flex flex-col gap-2">
-              {elementStates.map((v) => (
-                <div
-                  className={`flex flex-row hover:opacity-75 ${
-                    isFocused && "prism-component-text-color"
-                  } hover:cursor-pointer items-center`}
-                  onClick={onFocusComponent}
-                >
-                  <BoxOutline isFocus={isFocused} />
-                  <div>{v.name}</div>
-                </div>
+              {childComponents.map((v) => (
+                <ComponentItem component={v} isFocused={v.isFocused} key={v.id}/>
               ))}
             </div>
           )}
+
         </div>
       )}
     </>
