@@ -7,18 +7,21 @@ import {
   attachGroupComponents,
   deleteFocusedComponent,
   detachGroupComponents,
-} from "../prismSlice"
+} from "../prismSlice";
 import DropDown from "../../../utils/DropDown";
 import ElementItem from "./ElementItem";
 import GroupItem from "./GroupItem";
 import StatusItem from "./StatusItem";
+import ComponentItem from "./ComponentItem";
 
 export default function ConfigurePanel() {
   const dispatch = useDispatch();
 
-  const { elementStates, focusOn, components } = useSelector((state: RootState) => {
-    return state.prismSlice;
-  });
+  const { elementStates, focusOn, components } = useSelector(
+    (state: RootState) => {
+      return state.prismSlice;
+    }
+  );
 
   const focusedComponent = components.find(v => v.id === focusOn);
 
@@ -32,42 +35,46 @@ export default function ConfigurePanel() {
 
   const onClickAttachGroup = () => {
     dispatch(attachGroupComponents());
-  }
+  };
 
   const onClickDetachGroup = () => {
     dispatch(detachGroupComponents());
-  }
+  };
 
   return (
-    <div className="absolute top-0.5 right-0.5 flex flex-col z-10 m-2 bg-black rounded-lg items-center">
-      <div className="flex flex-row">
+    <div className="absolute top-0.5 right-0.5 flex flex-col w-[200px] z-10 
+      m-2 bg-black rounded-lg items-center text-sm">
+      <div className="flex flex-row flex-wrap w-full text-sm justify-center">
         <button
           className="bg-black rounded-lg text-gray-200 m-1 p-1 hover:bg-white/25"
           onClick={onClickCreateComponent}
         >
-          create component
+          create
         </button>
         <button
           className="bg-black rounded-lg text-gray-200 m-1 p-1 hover:bg-white/25"
           onClick={onClickDeleteComponent}
         >
-          delete component
+          delete
         </button>
         <button
           className="bg-black rounded-lg text-gray-200 m-1 p-1 hover:bg-white/25"
           onClick={onClickAttachGroup}
         >
-          group component
+          group
         </button>
         <button
           className="bg-black rounded-lg text-gray-200 m-1 p-1 hover:bg-white/25"
           onClick={onClickDetachGroup}
         >
-          detach component
+          detach
         </button>
       </div>
-      <DropDown dropDownName="components" defaultOpenState={true}>
-        {elementStates.map((v: ElementState, i) => {
+      <DropDown dropDownName="컴포넌트" defaultOpenState={true}>
+        {components.map((v, i) => {
+          return <ComponentItem component={v} key={v.id} isFocused={v.id === focusOn}/>
+        })}
+        {/* {elementStates.map((v: ElementState, i) => {
           return (
             <ElementItem
               elementState={v}
@@ -75,7 +82,7 @@ export default function ConfigurePanel() {
               key={v.id}
             />
           );
-        })}
+        })} */}
       </DropDown>
       {focusOn && focusedComponent && (
         <DropDown dropDownName="그룹" defaultOpenState={true}>
@@ -92,9 +99,9 @@ export default function ConfigurePanel() {
           })}
         </DropDown>
       )}
-      {focusOn && focusedComponent &&  (
+      {focusOn && focusedComponent && (
         <DropDown dropDownName="상태" defaultOpenState={true}>
-          <StatusItem focusedComponent={focusedComponent}/>
+          <StatusItem focusedComponent={focusedComponent} />
         </DropDown>
       )}
     </div>

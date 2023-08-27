@@ -9,6 +9,7 @@ let currentId = 0;
 
 export interface ElementState {
   id: number;
+  name: string,
   currentComponentId: number;
   position: [x: number, y: number, z: number];
   rotate: [x: number, y: number, z: number];
@@ -18,6 +19,7 @@ export interface ElementState {
 function createElementState(): ElementState {
   return {
     id: currentId++,
+    name: "컴포넌트 박스",
     currentComponentId: -1,
     position: [0, 0, 0],
     rotate: [0, 0, 0],
@@ -27,12 +29,14 @@ function createElementState(): ElementState {
 
 export interface Component {
   id: ComponentId;
+  name: string,
   elementIds: ElementId[];
 }
 
 function createGroupComponent(): Component {
   return {
     id: currentId++,
+    name: "컴포넌트 콜렉션",
     elementIds: [] as ElementId[],
   };
 }

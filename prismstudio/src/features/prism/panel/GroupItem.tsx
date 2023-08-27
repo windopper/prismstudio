@@ -34,7 +34,7 @@ export default function GroupItem({
     >
       <div>▲ </div>
       <div>component-{elementState.id}</div>
-      <button className="p-2" onClick={onClickDetachFromGroup}>
+      <button className="px-2" onClick={onClickDetachFromGroup}>
         그룹 해제
       </button>
     </div>
