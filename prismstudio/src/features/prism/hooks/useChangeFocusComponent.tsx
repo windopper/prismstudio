@@ -43,7 +43,7 @@ const useChangeFocusComponent = (
     }
 
     /* 래퍼 그룹에 추가 및 transformControls 위치 설정 */
-    const box = new BoxHelper(elementGroup, 0xffff00);
+    const box = new BoxHelper(elementGroup, '#28cc4c');
     scene.add(box);
     wrapperGroup.add(elementGroup);
     wrapperGroup.add(box);

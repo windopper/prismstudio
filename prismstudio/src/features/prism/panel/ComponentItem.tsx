@@ -18,6 +18,7 @@ export default function ComponentItem({
 
   useEffect(() => {
     if (!isFocused && isCollectionOpen) setCollectionOpen(false);
+    else if (isFocused) setCollectionOpen(true);
   }, [isFocused])
 
   const elementStates = useSelector((state: RootState) => {
@@ -29,8 +30,6 @@ export default function ComponentItem({
   const onFocusComponent = () => {
     dispatch(focusComponent({ id: component.id }));
   };
-
-  console.log(elementStates.length);
 
   return (
     <>

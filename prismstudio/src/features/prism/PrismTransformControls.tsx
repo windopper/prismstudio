@@ -54,6 +54,8 @@ const PrismTransformControls = React.memo(
           //onChange={console.log}
           onUpdate={console.log}
           translationSnap={TRANSLATION_SNAP}
+          rotationSnap={30 * 0.0174533}
+          scaleSnap={1}
           mode={transformControlsMode}
           ref={controlRef}
         /> : null}</>

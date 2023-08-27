@@ -2,6 +2,10 @@
     --prism-component-text-color: #488aef;
 }
 
+*::-webkit-scrollbar {
+    width: 5px;
+}
+
 
 .prism-component-text-color {
     color: var(--prism-component-text-color)
