@@ -24,7 +24,7 @@ function ComponentItem({
   }, [component.isFocused])
 
   const onFocusComponent = () => {
-    dispatch(focusComponent({ componentId: componentId, type: 'set' }));
+    dispatch(focusComponent({ componentId: componentId }));
   };
   
   return (

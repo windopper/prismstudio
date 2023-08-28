@@ -24,7 +24,7 @@ const PrismTransformControls = React.memo(
 
     const dispatch = useDispatch();
 
-    const { transformControlsMode, focusOn } = useSelector((state) => state.prismSlice);
+    const { transformControlsMode, focusOn } = useSelector((state: RootState) => state.prismSlice);
 
     const { controlRef } = useChangeFocusComponent(focusOn, elementRefs)
 

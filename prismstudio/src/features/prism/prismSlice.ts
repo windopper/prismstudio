@@ -167,72 +167,52 @@ const prismSlice = createSlice({
 
       state.focusOn = [];
     },
-    focusComponent: (state, action: PayloadAction<{ componentId: ComponentId, type: "set" | "add" }>) => {
-      const { componentId, type } = action.payload;
+    focusComponent: (state, action: PayloadAction<{ componentId: ComponentId }>) => {
+      const { componentId } = action.payload;
 
-      if (type === 'set') {
+      const setFocusStateAndGetChildComponentIdsIfGroupComponents = (componentIds: string[], focusState: boolean): string[] => {
+        let ret: string[] = [];
+        for (let id of componentIds) {
+          let component = state.components.byId[id];
+          component.isFocused = focusState;
+
+          if (component.type === 'GroupComponents') {
+            component = component as GroupComponents
+            ret.push(...component.components);
+          }
+        }
+        return ret;
+      }
+
+      const isFocusOn = state.components.byId[componentId];
+
+      if (state.enableGroupSelection) {
+        let componentIds = [componentId];
+        while(componentIds.length !== 0) {
+          componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, true);
+        }
+        state.focusOn.push(...componentIds);
+      }
+      else {
         let componentIds = current(state.focusOn);
 
         /* 이전 focus 컴포넌트의 isFocused를 false로 전환 */
         while(componentIds.length !== 0) {
-          let newComponentIds = [];
-
-          for (let id of componentIds) {
-            let component = state.components.byId[id];
-            component.isFocused = false;
-
-            /* 그룹에 속하면 하위 컴포넌트를 집어넣기 */
-            if (component.type === 'GroupComponents') {
-              component = current(component) as GroupComponents;
-              newComponentIds.push(...component.components)
-            }
-          }
-
-          componentIds = newComponentIds;
+          componentIds = componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, false);
         }
 
         /* 현재 선택된 컴포넌트의 isFocused를 true로 전환 */
         componentIds = [componentId];
         while(componentIds.length !== 0) {
-          let newComponentIds = [];
-
-          for (let id of componentIds) {
-            let component = state.components.byId[id];
-            
-            /* 그룹에 속하면 하위 컴포넌트를 집어넣기 */
-            if (component.type === 'GroupComponents') {
-              component = component as GroupComponents;
-              newComponentIds.push(...component.components)
-            }
-            component.isFocused = true;
-          }
-
-          componentIds = newComponentIds;
+          componentIds = componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, true);
         }
 
         state.focusOn = [componentId];
       }
-      else {
-        let componentIds = [componentId];
-        while(componentId.length !== 0) {
-          let newComponentIds = [];
-
-          for (let id of componentIds) {
-            let component = state.components.byId[id];
-
-            if (component.type === 'GroupComponents') {
-              component = component as GroupComponents;
-              newComponentIds.push(...component.components)
-            }
-            component.isFocused = true;
-          }
-        }
-
-        state.focusOn.push(componentId);
-      }
     },
-    outFocusComponent: (state) => {
-      let componentIds = current(state.focusOn);
+    outFocusComponent: (state, action: PayloadAction<{ componentId?: ComponentId }>) => {
+      const componentId = action.payload?.componentId;
+      let componentIds = componentId === undefined ? current(state.focusOn) : [componentId];
 
       /* 이전 focus 컴포넌트의 isFocused를 false로 전환 */
       while(componentIds.length !== 0) {
@@ -251,7 +231,9 @@ const prismSlice = createSlice({
 
         componentIds = newComponentIds;
       }
-      state.focusOn = [];
+
+      if (componentId === undefined) state.focusOn = [];
+      else state.focusOn = state.focusOn.filter(v => v !== componentId);
     },
     setGroupSelectionMode: (
       state,

@@ -7,8 +7,9 @@ export default function usePrismKeyEvent() {
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (e.repeat) return;
       const key: string = e.key;
-      if (key === "Escape") dispatch(outFocusComponent());
+      if (key === "Escape") dispatch(outFocusComponent({}));
       else if(key === 'Shift') dispatch(setGroupSelectionMode({enabled: true}))
       else if(key === "r") dispatch(setTransformControlsMode({mode: 'rotate'}))
       else if(key === "t") dispatch(setTransformControlsMode({mode: 'translate'}))
@@ -19,6 +20,7 @@ export default function usePrismKeyEvent() {
 
   const onKeyUp = useCallback(
     (e: KeyboardEvent) => {
+      if (e.repeat) return;
       const key: string = e.key;
       if(key === 'Shift') dispatch(setGroupSelectionMode({enabled: false}))
     },

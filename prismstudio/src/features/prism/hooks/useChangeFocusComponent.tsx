@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler } from "three";
 import { SingleComponent, updateElementStates } from "../prismSlice";
 import { useThree } from "@react-three/fiber";
@@ -10,21 +10,49 @@ const useChangeFocusComponent = (
   focusOn: string[],
   elementRefs: React.MutableRefObject<Map<string, Mesh>>
 ) => {
+  const dispatch = useDispatch();
   const controlRef = useRef<any>(null);
   const { scene } = useThree();
-  const dispatch = useDispatch();
   const { components } = useSelector((state: RootState) => state.prismSlice);
   const focusedComponents = focusOn.map(v => components.byId[v]);
 
-  useEffect(() => {
-    if (focusOn.length !== 1) return;
+  const elementIds = useMemo(() => getElementIdsFromComponents(focusedComponents, components), [focusedComponents, components]);
+  const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
 
-    const control = controlRef.current;
-    const elements = new Map(elementRefs.current);
-    const elementIds = getElementIdsFromComponents(focusedComponents, components);
+  const onDraggingChanged = useCallback((event: THREE.Event) => {
+    if (event.target?.dragging) return;
+    const updatingElementStates: any[] = [];
+    for (let elementId of elementIds) {
+      let worldElement = elements.get(elementId);
+      if (worldElement === undefined) continue;
+
+      let elementPosition = worldElement?.getWorldPosition(new Vector3());
+      let elementEuler = new Euler().setFromQuaternion(
+        worldElement?.getWorldQuaternion(new Quaternion())
+      );
+      let elementScale = worldElement?.getWorldScale(new Vector3());
+
+      updatingElementStates.push({
+        elementId,
+        position: [elementPosition.x, elementPosition.y, elementPosition.z],
+        rotate: [elementEuler.x, elementEuler.y, elementEuler.z],
+        scale: [elementScale.x, elementScale.y, elementScale.z],
+      });
+    }
+    dispatch(updateElementStates(updatingElementStates));
+  }, [elements, elementIds, dispatch]);
+
+  const onChange = useCallback((event: THREE.Event) => {}, []);
+
+  useEffect(() => {
+    if (focusOn.length === 0) return;
+
+    const isSelectSingle = focusOn.length === 1;
+    const control = controlRef.current; 
 
     /* 새로운 그룹을 생성 및 scene에 추가 */
     const elementGroup = new Group();
+    const elementBoxes: BoxHelper[] = [];
     const wrapperGroup = new Group();
     scene.add(elementGroup);
     scene.add(wrapperGroup);
@@ -43,48 +71,40 @@ const useChangeFocusComponent = (
         controlPosition[1] = elementPosition.y - 0.5;
       if (controlPosition[2] > elementPosition.z - 0.5)
         controlPosition[2] = elementPosition.z - 0.5;
+      
+      const box = new BoxHelper(element, '#e0de67');
+      elementBoxes.push(box);
     }
 
-    /* 래퍼 그룹에 추가 및 transformControls 위치 설정 */
-    const box = new BoxHelper(elementGroup, '#28cc4c');
-    scene.add(box);
-    wrapperGroup.add(elementGroup);
-    wrapperGroup.add(box);
-
-    control.attach(wrapperGroup);
-    control.position.set(...controlPosition);
-
-    const onDraggingChanged = (event: THREE.Event) => {
-      if (event.target?.dragging) return;
-      const updatingElementStates: any[] = [];
-      for (let elementId of elementIds) {
-        let worldElement = elements.get(elementId);
-        if (worldElement === undefined) continue;
-
-        let elementPosition = worldElement?.getWorldPosition(new Vector3());
-        let elementEuler = new Euler().setFromQuaternion(
-          worldElement?.getWorldQuaternion(new Quaternion())
-        );
-        let elementScale = worldElement?.getWorldScale(new Vector3());
-
-        updatingElementStates.push({
-          elementId,
-          position: [elementPosition.x, elementPosition.y, elementPosition.z],
-          rotate: [elementEuler.x, elementEuler.y, elementEuler.z],
-          scale: [elementScale.x, elementScale.y, elementScale.z],
-        });
+    /* 그룹 박스 테두리 헬퍼 추가 */
+    const groupBox = new BoxHelper(elementGroup, '#28cc4c');
+    if (!isSelectSingle) {
+      scene.add(groupBox);
+      wrapperGroup.add(groupBox);
+    } 
+    else {
+      for (const box of elementBoxes) {
+        scene.add(box);
+        wrapperGroup.add(box);
       }
-      dispatch(updateElementStates(updatingElementStates));
-    };
+    }
 
-    const onChange = (event: THREE.Event) => {};
+    /* 래퍼 그룹에 추가 */
+    wrapperGroup.add(elementGroup);    
 
-    control?.addEventListener("change", onChange);
-    control?.addEventListener("dragging-changed", onDraggingChanged);
+    /* 컨트롤러에 래퍼 그룹 부착 및 위치 설정 */
+    if (isSelectSingle) {
+      control?.attach(wrapperGroup);
+      control?.position.set(...controlPosition);
+      control?.addEventListener("change", onChange);
+      control?.addEventListener("dragging-changed", onDraggingChanged);
+    }
 
     return () => {
-      control?.removeEventListener("dragging-changed", onDraggingChanged);
-      control?.removeEventListener("change", onChange);
+      if (isSelectSingle) {
+        control?.removeEventListener("dragging-changed", onDraggingChanged);
+        control?.removeEventListener("change", onChange);
+      }
 
       for (let elementId of elementIds) {
         let worldElement = elements.get(elementId);
@@ -104,7 +124,7 @@ const useChangeFocusComponent = (
       if (focusOn === undefined) control?.dispose();
       scene.remove(elementGroup);
       scene.remove(wrapperGroup);
-      scene.remove(box);
+      scene.remove(...elementBoxes, groupBox);
     };
   }, [focusOn, focusedComponents]);
 

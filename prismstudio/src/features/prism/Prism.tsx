@@ -13,7 +13,7 @@ function Prism() {
   usePrismKeyEvent();
 
   const onPointerMissed = () => {
-    dispatch(outFocusComponent());
+    dispatch(outFocusComponent({}));
   }
 
   return (
