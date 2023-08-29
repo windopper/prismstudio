@@ -184,27 +184,46 @@ const prismSlice = createSlice({
         return ret;
       }
 
-      const isFocusOn = state.components.byId[componentId];
+      const isFocusOn = state.components.byId[componentId].isFocused;
 
+      /* 그룹 선택이 되어 있을 때 */
       if (state.enableGroupSelection) {
         let componentIds = [componentId];
-        while(componentIds.length !== 0) {
-          componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, true);
+
+        /* 현재 컴포넌트가 이미 선택되어 있을 때 */
+        if (isFocusOn) {
+          while(componentIds.length !== 0) {
+            componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, false);
+          }
+          state.focusOn = state.focusOn.filter(v => v !== componentId);
         }
-        state.focusOn.push(...componentIds);
+        else {
+          while(componentIds.length !== 0) {
+            componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, true);
+          }
+          state.focusOn.push(componentId);
+        }
       }
       else {
         let componentIds = current(state.focusOn);
 
         /* 이전 focus 컴포넌트의 isFocused를 false로 전환 */
-        while(componentIds.length !== 0) {
-          componentIds = componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, false);
+        while (componentIds.length !== 0) {
+          componentIds = componentIds =
+            setFocusStateAndGetChildComponentIdsIfGroupComponents(
+              componentIds,
+              false
+            );
         }
 
         /* 현재 선택된 컴포넌트의 isFocused를 true로 전환 */
         componentIds = [componentId];
-        while(componentIds.length !== 0) {
-          componentIds = componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, true);
+        while (componentIds.length !== 0) {
+          componentIds = componentIds =
+            setFocusStateAndGetChildComponentIdsIfGroupComponents(
+              componentIds,
+              true
+            );
         }
 
         state.focusOn = [componentId];
@@ -258,8 +277,30 @@ const prismSlice = createSlice({
     ) => {
 
     },
+    /* 구현 필요 */
     attachGroupComponents: (state) => {
-      
+      let topPointer: string = "temp-pointer";
+      const isFocusOnAllTopPointerIsSame: boolean = (() => {
+        for (let componentId of state.focusOn) {
+          const curTopPointer = state.components.byId[componentId].topPointer;
+          if (topPointer === "temp-pointer") topPointer = curTopPointer;
+          else if (topPointer !== curTopPointer) return false;
+        }
+        return true;
+      })();
+
+      if (!isFocusOnAllTopPointerIsSame) return;
+
+      const newGroupComponent = createGroupComponent();
+      state.components.byId[newGroupComponent.id] = newGroupComponent;
+      state.components.allIds.push(newGroupComponent.id);
+
+      const topPointerComponent = state.components.byId[topPointer];
+
+      newGroupComponent.topPointer = topPointer;
+      newGroupComponent.isFocused = true;
+      newGroupComponent.components = [...state.focusOn];
+      state.focusOn = [newGroupComponent.id];
     },
     detachGroupComponents: (
       state,
@@ -273,6 +314,7 @@ const prismSlice = createSlice({
 
     }
 }});
+
 
 const { reducer, actions } = prismSlice;
 export const {

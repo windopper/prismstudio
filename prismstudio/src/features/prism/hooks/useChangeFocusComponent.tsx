@@ -13,16 +13,24 @@ const useChangeFocusComponent = (
   const dispatch = useDispatch();
   const controlRef = useRef<any>(null);
   const { scene } = useThree();
-  const { components } = useSelector((state: RootState) => state.prismSlice);
-  const focusedComponents = focusOn.map(v => components.byId[v]);
+  const { components: componentsMap } = useSelector((state: RootState) => state.prismSlice);
+  const focusedComponents = focusOn.map(v => componentsMap.byId[v]);
 
-  const elementIds = useMemo(() => getElementIdsFromComponents(focusedComponents, components), [focusedComponents, components]);
+  /* 각 루트 컴포넌트 마다 그룹을 설정하기 위해서 2차원 배열의 요소 아이디를 받아옴 */
+  const elementIdsAsAllFocusedComponents: string[][] = useMemo(
+    () =>
+      focusedComponents.map((v) =>
+        getElementIdsFromComponents([v], componentsMap)
+      ),
+    [focusedComponents, componentsMap]
+  );
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
 
   const onDraggingChanged = useCallback((event: THREE.Event) => {
     if (event.target?.dragging) return;
     const updatingElementStates: any[] = [];
-    for (let elementId of elementIds) {
+
+    for (let elementId of ([] as string[]).concat(...elementIdsAsAllFocusedComponents) ) {
       let worldElement = elements.get(elementId);
       if (worldElement === undefined) continue;
 
@@ -40,7 +48,7 @@ const useChangeFocusComponent = (
       });
     }
     dispatch(updateElementStates(updatingElementStates));
-  }, [elements, elementIds, dispatch]);
+  }, [elements, elementIdsAsAllFocusedComponents, dispatch]);
 
   const onChange = useCallback((event: THREE.Event) => {}, []);
 
@@ -51,46 +59,43 @@ const useChangeFocusComponent = (
     const control = controlRef.current; 
 
     /* 새로운 그룹을 생성 및 scene에 추가 */
-    const elementGroup = new Group();
-    const elementBoxes: BoxHelper[] = [];
+    const elementGroups: Group[] = [];
+    const groupBoxes: BoxHelper[] = [];
     const wrapperGroup = new Group();
-    scene.add(elementGroup);
     scene.add(wrapperGroup);
-
+    
     const controlPosition: [x: number, y: number, z: number] = [999, 999, 999];
+    
+    /* 루트 컴포넌트 마다 받아온 아이디로 그룹을 지정함 */
+    for (let elementIds of elementIdsAsAllFocusedComponents) {
+      const elementGroup = new Group();
+      elementGroups.push(elementGroup);
+      scene.add(elementGroup);
 
-    /* 선택된 요소에 대하여 controlPosition 계산 및 그룹에 요소 추가 */
-    for (let elementId of elementIds) {
-      const element = elements.get(elementId);
-      if (element === undefined) continue;
-      elementGroup.add(element);
-      const elementPosition = element.getWorldPosition(new Vector3());
-      if (controlPosition[0] > elementPosition.x - 0.5)
-        controlPosition[0] = elementPosition.x - 0.5;
-      if (controlPosition[1] > elementPosition.y - 0.5)
-        controlPosition[1] = elementPosition.y - 0.5;
-      if (controlPosition[2] > elementPosition.z - 0.5)
-        controlPosition[2] = elementPosition.z - 0.5;
-      
-      const box = new BoxHelper(element, '#e0de67');
-      elementBoxes.push(box);
-    }
-
-    /* 그룹 박스 테두리 헬퍼 추가 */
-    const groupBox = new BoxHelper(elementGroup, '#28cc4c');
-    if (!isSelectSingle) {
-      scene.add(groupBox);
-      wrapperGroup.add(groupBox);
-    } 
-    else {
-      for (const box of elementBoxes) {
-        scene.add(box);
-        wrapperGroup.add(box);
+      /* 선택된 요소에 대하여 controlPosition 계산 및 그룹에 요소 추가 */
+      for (let elementId of elementIds) {
+        const element = elements.get(elementId);
+        if (element === undefined) continue;
+        elementGroup.add(element);
+        const elementPosition = element.getWorldPosition(new Vector3());
+        if (controlPosition[0] > elementPosition.x - 0.5)
+          controlPosition[0] = elementPosition.x - 0.5;
+        if (controlPosition[1] > elementPosition.y - 0.5)
+          controlPosition[1] = elementPosition.y - 0.5;
+        if (controlPosition[2] > elementPosition.z - 0.5)
+          controlPosition[2] = elementPosition.z - 0.5;
+        
       }
+
+      /* 그룹 박스 테두리 헬퍼 추가 */
+      const groupBox = new BoxHelper(elementGroup, '#28cc4c');
+      groupBoxes.push(groupBox);
+      scene.add(groupBox);
     }
 
     /* 래퍼 그룹에 추가 */
-    wrapperGroup.add(elementGroup);    
+    wrapperGroup.add(...elementGroups);    
+    wrapperGroup.add(...groupBoxes);
 
     /* 컨트롤러에 래퍼 그룹 부착 및 위치 설정 */
     if (isSelectSingle) {
@@ -106,7 +111,7 @@ const useChangeFocusComponent = (
         control?.removeEventListener("change", onChange);
       }
 
-      for (let elementId of elementIds) {
+      for (let elementId of ([] as string[]).concat(...elementIdsAsAllFocusedComponents)) {
         let worldElement = elements.get(elementId);
         if (worldElement === undefined) continue;
         let elementPosition = worldElement?.getWorldPosition(new Vector3());
@@ -121,10 +126,11 @@ const useChangeFocusComponent = (
         worldElement?.quaternion.copy(elementQuaternion!);
         worldElement?.scale.copy(elementScale!);
       }
+
       if (focusOn === undefined) control?.dispose();
-      scene.remove(elementGroup);
+      scene.remove(...elementGroups);
+      scene.remove(...groupBoxes);
       scene.remove(wrapperGroup);
-      scene.remove(...elementBoxes, groupBox);
     };
   }, [focusOn, focusedComponents]);
 

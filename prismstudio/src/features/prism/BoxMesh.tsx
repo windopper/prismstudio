@@ -15,20 +15,21 @@ const BoxMesh = React.memo(
 
     const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
     const wrapComponent = useSelector((state: RootState) => state.prismSlice.components.byId[elementState.wrapComponentId]);
-    const enableGroupSelection = useSelector((state: RootState) => state.prismSlice.enableGroupSelection);
+    //const enableGroupSelection = useSelector((state: RootState) => state.prismSlice.enableGroupSelection);
     const dispatch = useDispatch();
 
     //useHelper(isFocused && ref, BoxHelper, "yellow");
 
     const onFocus = useCallback(() => {
-      if (wrapComponent.isFocused) {
-        if (enableGroupSelection) dispatch(outFocusComponent({ componentId: wrapComponent.id }))
-        else dispatch(focusComponent({ componentId: wrapComponent.id }));
-      }
-      else {
-        dispatch(focusComponent({ componentId: wrapComponent.id }));
-      }
-    }, [dispatch, wrapComponent, enableGroupSelection]);
+      dispatch(focusComponent({ componentId: wrapComponent.id }));
+      // if (wrapComponent.isFocused) {
+      //   if (enableGroupSelection) dispatch(outFocusComponent({ componentId: wrapComponent.id }))
+      //   else dispatch(focusComponent({ componentId: wrapComponent.id }));
+      // }
+      // else {
+      //   dispatch(focusComponent({ componentId: wrapComponent.id }));
+      // }
+    }, [dispatch, wrapComponent]);
 
     return (
       <mesh onClick={onFocus} ref={ref} position={[0.5, 0.5, 0.5]}>
