@@ -4,7 +4,7 @@ import { SingleComponent, updateElementStates } from "../prismSlice";
 import { useThree } from "@react-three/fiber";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store";
-import { getElementIdsFromComponents } from "../utils/prismSliceUtil";
+import { getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
 
 const useChangeFocusComponent = (
   focusOn: string[],
@@ -20,7 +20,7 @@ const useChangeFocusComponent = (
   const elementIdsAsAllFocusedComponents: string[][] = useMemo(
     () =>
       focusedComponents.map((v) =>
-        getElementIdsFromComponents([v], componentsMap)
+        getChildElementIdsFromComponents([v], componentsMap)
       ),
     [focusedComponents, componentsMap]
   );

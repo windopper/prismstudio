@@ -1,5 +1,6 @@
 import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import { store } from "../../store";
+import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "./utils/prismSliceUtil";
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
 type ComponentId = string;
@@ -279,9 +280,12 @@ const prismSlice = createSlice({
     },
     /* 구현 필요 */
     attachGroupComponents: (state) => {
+      if (state.focusOn.length === 0) return;
       let topPointer: string = "temp-pointer";
+      const currentFocusOn = current(state.focusOn);
+
       const isFocusOnAllTopPointerIsSame: boolean = (() => {
-        for (let componentId of state.focusOn) {
+        for (let componentId of currentFocusOn) {
           const curTopPointer = state.components.byId[componentId].topPointer;
           if (topPointer === "temp-pointer") topPointer = curTopPointer;
           else if (topPointer !== curTopPointer) return false;
@@ -291,21 +295,52 @@ const prismSlice = createSlice({
 
       if (!isFocusOnAllTopPointerIsSame) return;
 
+      /* 새로운 그룹을 만들고 저장 */
       const newGroupComponent = createGroupComponent();
+      newGroupComponent.topPointer = topPointer;
+      newGroupComponent.isFocused = true;
+      newGroupComponent.components = [...currentFocusOn];
       state.components.byId[newGroupComponent.id] = newGroupComponent;
       state.components.allIds.push(newGroupComponent.id);
 
-      const topPointerComponent = state.components.byId[topPointer];
-
-      newGroupComponent.topPointer = topPointer;
-      newGroupComponent.isFocused = true;
-      newGroupComponent.components = [...state.focusOn];
+      /* 지정된 컴포넌트들의 topPointer를 새로운 그룹으로 지정 */
+      for (let componentIds of currentFocusOn) {
+        const component = state.components.byId[componentIds];
+        component.topPointer = newGroupComponent.id;
+      }
+      
+      /* 선택된 컴포넌트의 상위 포인터가 최상위 포인터가 아닐 때 
+        상위 그룹 컴포넌트에 새로운 그룹 id를 넣고 이전 컴포넌트들을 제거 */
+      if (topPointer !== COMPONENT_TOP_POINTER) {
+        const topPointerComponent = state.components.byId[topPointer];
+        const topPointerGroupComponent = (topPointerComponent as GroupComponents);
+        topPointerGroupComponent.components.push(newGroupComponent.id);
+        topPointerGroupComponent.components =
+          topPointerGroupComponent.components.filter(
+            (v, i) => currentFocusOn.find((v2) => v2 === v) === undefined
+          );
+      }
+      
       state.focusOn = [newGroupComponent.id];
     },
     detachGroupComponents: (
       state,
     ) => {
+      const currentFocusOn = current(state.focusOn);
+      for (let componentId of currentFocusOn) {
+        const component = state.components.byId[componentId];
+        const topPointer = component.topPointer;
+        const { groupComponentIds, singleComponentIds } = getChildComponentIdsFromComponent(component, current(state.components));
 
+        for (let groupComponentId of groupComponentIds) {
+          delete state.components.byId[groupComponentId];
+          state.components.allIds = state.components.allIds.filter(v => v !== groupComponentId);
+        }
+
+        for (let singleComponentId of singleComponentIds) {
+
+        }
+      }
     },
     detachComponentFromGroup: (
       state,

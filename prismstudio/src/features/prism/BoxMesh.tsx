@@ -22,13 +22,6 @@ const BoxMesh = React.memo(
 
     const onFocus = useCallback(() => {
       dispatch(focusComponent({ componentId: wrapComponent.id }));
-      // if (wrapComponent.isFocused) {
-      //   if (enableGroupSelection) dispatch(outFocusComponent({ componentId: wrapComponent.id }))
-      //   else dispatch(focusComponent({ componentId: wrapComponent.id }));
-      // }
-      // else {
-      //   dispatch(focusComponent({ componentId: wrapComponent.id }));
-      // }
     }, [dispatch, wrapComponent]);
 
     return (
