@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import testSlice from './features/test/testSlice'
-import prismSlice from './features/prism/prismSlice'
+import prismSlice from './prism/redux/prismSlice'
 
 export const store = configureStore({
     reducer: {

@@ -1,5 +1,5 @@
 import "./App.css";
-import Prism from "./features/prism/Prism";
+import Prism from "./prism/Prism";
 
 function App() {
 

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler } from "three";
-import { SingleComponent, updateElementStates } from "../prismSlice";
+import { SingleComponent, updateElementStates } from "../redux/prismSlice";
 import { useThree } from "@react-three/fiber";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../store";
+import { RootState } from "../../store";
 import { getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
 
 const useChangeFocusComponent = (

@@ -1,4 +1,4 @@
-import { SingleComponent } from "../prismSlice";
+import { SingleComponent } from "../../redux/prismSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 

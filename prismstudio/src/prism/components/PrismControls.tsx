@@ -1,6 +1,6 @@
 import { OrbitControls } from "@react-three/drei";
 import { useSelector } from "react-redux";
-import { ElementState } from "./prismSlice";
+import { ElementState } from "../redux/prismSlice";
 import { RootState } from "../../store";
 import { useRef } from "react";
 import PrismTransformControls from "./PrismTransformControls";

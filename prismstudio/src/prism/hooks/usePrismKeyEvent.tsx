@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { outFocusComponent, setGroupSelectionMode, setTransformControlsMode } from "../prismSlice";
+import { outFocusComponent, setGroupSelectionMode, setTransformControlsMode } from "../redux/prismSlice";
 
 export default function usePrismKeyEvent() {
   const dispatch = useDispatch();

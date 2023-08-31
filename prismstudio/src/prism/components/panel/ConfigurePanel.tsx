@@ -8,7 +8,7 @@ import {
   attachGroupComponents,
   deleteFocusedComponent,
   detachGroupComponents,
-} from "../prismSlice";
+} from "../../redux/prismSlice";
 import DropDown from "../../../utils/DropDown";
 import GroupItem from "./GroupItem";
 import StatusItem from "./StatusItem";
@@ -18,16 +18,24 @@ import PanelItemContainer from "./PanelItemContainer";
 export default function ConfigurePanel() {
   const dispatch = useDispatch();
 
-  const { elementStates, focusOn, components } = useSelector(
-    (state: RootState) => {
-      return state.prismSlice;
-    }
-  );
+  // const { elementStates, focusOn, components } = useSelector(
+  //   (state: RootState) => {
+  //     return state.prismSlice;
+  //   }
+  // );
 
-  const { allIds } = components;
+  //const { allIds } = components;
+
+  const topComponents = useSelector((state: RootState) => {
+    return state.prismSlice.components.allIds
+      .map((v) => state.prismSlice.components.byId[v])
+      .filter((v) => v.topPointer === COMPONENT_TOP_POINTER);
+  })
+
+  console.log('panel update');
 
   //const focusedComponent = components.find((v) => v.id === focusOn);
-  const topComponents = Object.values(components.byId).filter(v => v.topPointer === COMPONENT_TOP_POINTER);
+  // const topComponents = Object.values(components.byId).filter(v => v.topPointer === COMPONENT_TOP_POINTER);
 
   const onClickCreateComponent = () => {
     dispatch(addNewComponent());

@@ -1,14 +1,17 @@
 import React from "react";
-import { ElementState, focusComponent } from "../prismSlice";
+import {
+  ElementState,
+  detachComponentFromGroup,
+  focusComponent,
+} from "../../redux/prismSlice";
 import { useDispatch } from "react-redux";
-import BoxOutline from "../svg/BoxOutline";
 
 export interface ElementItemProp {
   elementState: ElementState;
   isFocused: boolean;
 }
 
-export default function ElementItem({
+export default function GroupItem({
   elementState,
   isFocused,
 }: ElementItemProp) {
@@ -18,15 +21,22 @@ export default function ElementItem({
     //dispatch(focusComponent({ id: elementState.currentComponentId }));
   };
 
+  const onClickDetachFromGroup = () => {
+    //dispatch(detachComponentFromGroup({ elementId: elementState.id }));
+  };
+
   return (
     <div
       className={`flex flex-row hover:opacity-75 ${
         isFocused && "prism-component-text-color"
-      } hover:cursor-pointer items-center my-1`}
+      } hover:cursor-pointer items-center`}
       onClick={focusElementItem}
     >
-      <BoxOutline isFocus={isFocused} />
+      <div>▲ </div>
       <div>component-{elementState.id}</div>
+      <button className="px-2" onClick={onClickDetachFromGroup}>
+        그룹 해제
+      </button>
     </div>
   );
 }

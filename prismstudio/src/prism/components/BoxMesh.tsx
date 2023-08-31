@@ -2,7 +2,7 @@ import { useHelper } from "@react-three/drei";
 import React, { forwardRef, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BoxHelper, Color } from "three";
-import { focusComponent, outFocusComponent, toggleGroupSelectionElements } from "./prismSlice";
+import { focusComponent, outFocusComponent, toggleGroupSelectionElements } from "../redux/prismSlice";
 import { RootState } from "../../store";
 
 interface Prop {

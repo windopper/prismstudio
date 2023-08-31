@@ -1,12 +1,11 @@
-import PrismControls from "./PrismControls";
-import ConfigurePanel from "./panel/ConfigurePanel";
+import PrismControls from "./components/PrismControls";
+import ConfigurePanel from "./components/panel/ConfigurePanel";
 import { Canvas } from "@react-three/fiber";
 import './Prism.css'
 import usePrismKeyEvent from "./hooks/usePrismKeyEvent";
 import { useDispatch } from "react-redux";
-import { outFocusComponent } from "./prismSlice";
-
-const GRID_SIZE = 30;
+import { outFocusComponent } from "./redux/prismSlice";
+import { GRID_SIZE } from "./constants";
 
 function Prism() {
   const dispatch = useDispatch();

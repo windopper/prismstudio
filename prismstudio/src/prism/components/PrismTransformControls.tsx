@@ -4,9 +4,9 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { Event, Mesh } from "three";
 import {
   toggleOrbitControl,
-} from "./prismSlice";
+} from "../redux/prismSlice";
 import { RootState } from "../../store";
-import useChangeFocusComponent from "./hooks/useChangeFocusComponent";
+import useChangeFocusComponent from "../hooks/useChangeFocusComponent";
 
 const TRANSLATION_SNAP = 0.03125;
 

@@ -1,6 +1,7 @@
 import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import { store } from "../../store";
-import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "./utils/prismSliceUtil";
+import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
+import { WritableDraft } from "immer/dist/internal";
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
 type ComponentId = string;
@@ -26,6 +27,7 @@ export interface BaseComponent {
   type: "GroupComponents" | "SingleComponent",
   name: string,
   isFocused: boolean,
+  isChildComponentsFocused: boolean,
   topPointer: ComponentId,
 }
 
@@ -57,6 +59,7 @@ function createSingleComponent(elementId: ElementId): SingleComponent {
     name: "컴포넌트 박스",
     elementState: elementId,
     isFocused: false,
+    isChildComponentsFocused: false,
     topPointer: "component-0",
   };
 }
@@ -68,6 +71,7 @@ function createGroupComponent(): GroupComponents {
     name: "컴포넌트 콜렉션",
     components: [],
     isFocused: false,
+    isChildComponentsFocused: false,
     topPointer: "component-0",
   }
 }
@@ -170,64 +174,63 @@ const prismSlice = createSlice({
     },
     focusComponent: (state, action: PayloadAction<{ componentId: ComponentId }>) => {
       const { componentId } = action.payload;
-
-      const setFocusStateAndGetChildComponentIdsIfGroupComponents = (componentIds: string[], focusState: boolean): string[] => {
-        let ret: string[] = [];
-        for (let id of componentIds) {
-          let component = state.components.byId[id];
-          component.isFocused = focusState;
-
-          if (component.type === 'GroupComponents') {
-            component = component as GroupComponents
-            ret.push(...component.components);
-          }
-        }
-        return ret;
-      }
-
+      /* 현재 컴포넌트가 이미 선택되어 있는지 */
       const isFocusOn = state.components.byId[componentId].isFocused;
+      /* 그룹 선택 옵션이 켜져 있는지 */
+      const isEnableGroupSelection = state.enableGroupSelection;
 
-      /* 그룹 선택이 되어 있을 때 */
-      if (state.enableGroupSelection) {
+      if (isEnableGroupSelection) {
         let componentIds = [componentId];
 
-        /* 현재 컴포넌트가 이미 선택되어 있을 때 */
         if (isFocusOn) {
-          while(componentIds.length !== 0) {
-            componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, false);
-          }
+          setFocusStateOfAllChildComponents(state, componentIds, false);
+          /* 포커싱 리스트에서 제외 */
           state.focusOn = state.focusOn.filter(v => v !== componentId);
         }
         else {
-          while(componentIds.length !== 0) {
-            componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(componentIds, true);
-          }
+          setFocusStateOfAllChildComponents(state, componentIds, true);
           state.focusOn.push(componentId);
         }
       }
       else {
         let componentIds = current(state.focusOn);
-
-        /* 이전 focus 컴포넌트의 isFocused를 false로 전환 */
-        while (componentIds.length !== 0) {
-          componentIds = componentIds =
-            setFocusStateAndGetChildComponentIdsIfGroupComponents(
-              componentIds,
-              false
-            );
-        }
-
-        /* 현재 선택된 컴포넌트의 isFocused를 true로 전환 */
+        setFocusStateOfAllChildComponents(state, componentIds, false);
         componentIds = [componentId];
-        while (componentIds.length !== 0) {
-          componentIds = componentIds =
-            setFocusStateAndGetChildComponentIdsIfGroupComponents(
-              componentIds,
-              true
-            );
-        }
+        setFocusStateOfAllChildComponents(state, componentIds, true);
 
         state.focusOn = [componentId];
+      }
+
+      function setFocusStateOfAllChildComponents(
+        state: WritableDraft<PrismState>,
+        componentIds: string[],
+        focusState: boolean
+      ) {
+        while (componentIds.length !== 0) {
+          componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(
+            state,
+            componentIds,
+            focusState
+          );
+        }
+      }
+
+      function setFocusStateAndGetChildComponentIdsIfGroupComponents(
+        state: WritableDraft<PrismState>,
+        componentIds: string[],
+        focusState: boolean
+      ): string[] {
+        let ret: string[] = [];
+        for (let id of componentIds) {
+          let component = state.components.byId[id];
+          state.components.byId[id].isFocused = focusState;
+
+          if (component.type === "GroupComponents") {
+            component = component as GroupComponents;
+            ret.push(...component.components);
+          }
+        }
+        return ret;
       }
     },
     outFocusComponent: (state, action: PayloadAction<{ componentId?: ComponentId }>) => {

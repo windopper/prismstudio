@@ -2,7 +2,7 @@ import {
   GroupComponents,
   PrismNormalizedComponentState,
   SingleComponent,
-} from "../prismSlice";
+} from "../redux/prismSlice";
 
 export function getChildElementIdsFromComponents(
   components: (GroupComponents | SingleComponent)[],
