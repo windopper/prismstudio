@@ -2,6 +2,8 @@ import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import { store } from "../../store";
 import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
 import { WritableDraft } from "immer/dist/internal";
+import { iterateChildComponents, registerComponent, removeComponent } from "./componentHelper";
+import { registerElementState, removeElementState } from "./elementStateHelper";
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
 type ComponentId = string;
@@ -27,12 +29,12 @@ export interface BaseComponent {
   type: "GroupComponents" | "SingleComponent",
   name: string,
   isFocused: boolean,
-  isChildComponentsFocused: boolean,
   topPointer: ComponentId,
 }
 
 /* 그룹 컴포넌트 속성 */
 export interface GroupComponents extends BaseComponent {
+  isChildComponentsFocused: boolean,
   components: ComponentId[]
 }
 
@@ -59,7 +61,6 @@ function createSingleComponent(elementId: ElementId): SingleComponent {
     name: "컴포넌트 박스",
     elementState: elementId,
     isFocused: false,
-    isChildComponentsFocused: false,
     topPointer: "component-0",
   };
 }
@@ -127,49 +128,25 @@ const prismSlice = createSlice({
       const newElementState = createElementState();
       const newSingleComponent = createSingleComponent(newElementState.id);
       newElementState.wrapComponentId = newSingleComponent.id;
-      state.elementStates.allIds.push(newElementState.id);
-      state.elementStates.byId[newElementState.id] = newElementState;
-      state.components.allIds.push(newSingleComponent.id);
-      state.components.byId[newSingleComponent.id] = newSingleComponent
+      registerElementState(state, newElementState);
+      registerComponent(state, newSingleComponent);
     },
     deleteFocusedComponent: (state) => {
       let componentIds: string[] = current(state.focusOn)
       const deleteElementStateIds: ElementId[] = []
       const deleteComponentIds: ComponentId[] = []
 
-      // 포레스트 구조의 컴포넌트를 순회함
-      while(componentIds.length !== 0) {
-        const newComponentIds: string[] = []
+      iterateChildComponents(state, componentIds, (component) => {
+        if (component.type === 'SingleComponent') {
+          component = component as SingleComponent
+          const elementState = state.elementStates.byId[component.elementState]
+          deleteElementStateIds.push(elementState.id)
+        } 
+        deleteComponentIds.push(component.id);
+      })
 
-        for (const componentId of componentIds) {
-          let component = state.components.byId[componentId];
-          /* 중간 노드에 도달하면 다음 순회에 자신의 아이디를 넣음 */
-          if (component.type === 'GroupComponents') {
-            component = component as GroupComponents
-            newComponentIds.push(...component.components)
-            deleteComponentIds.push(component.id);
-          }
-          /* 리프 노드에 도달하면 자기자신과 elementState를 포함하여 제거할 리스트에 삽입 */
-          else if (component.type === 'SingleComponent') {
-            component = component as SingleComponent
-            const elementState = state.elementStates.byId[component.elementState]
-            deleteElementStateIds.push(elementState.id)
-            deleteComponentIds.push(component.id);
-          }
-        }
-
-        componentIds = newComponentIds;
-      }
-      
-      for (const id of deleteElementStateIds) {
-        state.elementStates.allIds = state.elementStates.allIds.filter(v => v !== id);
-        delete state.elementStates.byId[id];
-      }
-      for (const id of deleteComponentIds) {
-        state.components.allIds = state.components.allIds.filter(v => v !== id);
-        delete state.components.byId[id];
-      }
-
+      deleteElementStateIds.forEach(v => removeElementState(state, v));
+      deleteComponentIds.forEach(v => removeComponent(state, v));
       state.focusOn = [];
     },
     focusComponent: (state, action: PayloadAction<{ componentId: ComponentId }>) => {
@@ -183,77 +160,39 @@ const prismSlice = createSlice({
         let componentIds = [componentId];
 
         if (isFocusOn) {
-          setFocusStateOfAllChildComponents(state, componentIds, false);
+          iterateChildComponents(state, componentIds, (component) => {
+            component.isFocused = false;
+          })
           /* 포커싱 리스트에서 제외 */
           state.focusOn = state.focusOn.filter(v => v !== componentId);
         }
         else {
-          setFocusStateOfAllChildComponents(state, componentIds, true);
+          iterateChildComponents(state, componentIds, (component) => {
+            component.isFocused = true;
+          })
           state.focusOn.push(componentId);
         }
       }
       else {
         let componentIds = current(state.focusOn);
-        setFocusStateOfAllChildComponents(state, componentIds, false);
+        iterateChildComponents(state, componentIds, (component) => {
+          component.isFocused = false;
+        })
         componentIds = [componentId];
-        setFocusStateOfAllChildComponents(state, componentIds, true);
+        iterateChildComponents(state, componentIds, (component) => {
+          component.isFocused = true;
+        })
 
         state.focusOn = [componentId];
-      }
-
-      function setFocusStateOfAllChildComponents(
-        state: WritableDraft<PrismState>,
-        componentIds: string[],
-        focusState: boolean
-      ) {
-        while (componentIds.length !== 0) {
-          componentIds = setFocusStateAndGetChildComponentIdsIfGroupComponents(
-            state,
-            componentIds,
-            focusState
-          );
-        }
-      }
-
-      function setFocusStateAndGetChildComponentIdsIfGroupComponents(
-        state: WritableDraft<PrismState>,
-        componentIds: string[],
-        focusState: boolean
-      ): string[] {
-        let ret: string[] = [];
-        for (let id of componentIds) {
-          let component = state.components.byId[id];
-          state.components.byId[id].isFocused = focusState;
-
-          if (component.type === "GroupComponents") {
-            component = component as GroupComponents;
-            ret.push(...component.components);
-          }
-        }
-        return ret;
       }
     },
     outFocusComponent: (state, action: PayloadAction<{ componentId?: ComponentId }>) => {
       const componentId = action.payload?.componentId;
       let componentIds = componentId === undefined ? current(state.focusOn) : [componentId];
 
-      /* 이전 focus 컴포넌트의 isFocused를 false로 전환 */
-      while(componentIds.length !== 0) {
-        let newComponentIds = [];
-
-        for (let id of componentIds) {
-          let component = state.components.byId[id];
-          component.isFocused = false;
-
-          /* 그룹에 속하면 하위 컴포넌트를 집어넣기 */
-          if (component.type === 'GroupComponents') {
-            component = current(component) as GroupComponents;
-            newComponentIds.push(...component.components)
-          }
-        }
-
-        componentIds = newComponentIds;
-      }
+      iterateChildComponents(state, componentIds, (component) => {
+        component.isFocused = false;
+      });
 
       if (componentId === undefined) state.focusOn = [];
       else state.focusOn = state.focusOn.filter(v => v !== componentId);

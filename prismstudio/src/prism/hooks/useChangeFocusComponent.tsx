@@ -26,6 +26,7 @@ const useChangeFocusComponent = (
   );
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
 
+  /* transformControls 이벤트 함수 */
   const onDraggingChanged = useCallback((event: THREE.Event) => {
     if (event.target?.dragging) return;
     const updatingElementStates: any[] = [];

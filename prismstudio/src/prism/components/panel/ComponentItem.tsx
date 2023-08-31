@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { focusComponent, GroupComponents } from "../../redux/prismSlice";
 import { useDispatch, useSelector } from "react-redux";
 import BoxOutline from "../../svg/BoxOutline";
@@ -13,8 +13,7 @@ function ComponentItem({
   componentId,
   setTopCollectionOpen
 }: ComponentItemProp) {
-  const [isCollectionOpen, setCollectionOpen] = useState(false);
-  console.log(componentId + ' update' + isCollectionOpen)
+  const [childFocusCount, setChildFocusCount] = useState(0);
 
   const dispatch = useDispatch();
   
@@ -22,18 +21,24 @@ function ComponentItem({
     return state.prismSlice.components.byId[componentId];
   })
 
-  const { isFocused } = useSelector((state: RootState) => {
-    return state.prismSlice.components.byId[componentId];
+  const isFocused = useSelector((state: RootState) => {
+    return state.prismSlice.components.byId[componentId].isFocused;
   })
 
-  const setTopAndCurrentCollectionOpen = useCallback((v: boolean) => {
-    component.type === "GroupComponents" && setCollectionOpen(v);
-    setTopCollectionOpen && setTopCollectionOpen(v);
-  }, [setTopCollectionOpen, setCollectionOpen, component.type]);
+  const isGroupComponent = useMemo(() => component.type === "GroupComponents", [component.type]);
+
+  const setTopAndCurrentCollectionOpen = useCallback((state: boolean) => {
+    if (state) {
+      isGroupComponent && setChildFocusCount(v => v + 1);
+    }
+    else {
+      isGroupComponent && setChildFocusCount(v => v - 1);
+    }
+    setTopCollectionOpen && setTopCollectionOpen(state);
+  }, [setTopCollectionOpen, setChildFocusCount, component.type]);
   
   /* 해당 컴포넌트가 포커스되거나 하위 컴포넌트에 의해 열렸을 때 버블링 */
   useEffect(() => {
-    console.log(componentId + ' focus changed to ' + isFocused)
     if (isFocused) setTopAndCurrentCollectionOpen(true);
     else setTopAndCurrentCollectionOpen(false);
   }, [isFocused, setTopAndCurrentCollectionOpen])
@@ -44,7 +49,7 @@ function ComponentItem({
   
   return (
     <>
-      {component.type === "SingleComponent" ? (
+      {!isGroupComponent ? (
         <div
           className={`flex flex-row hover:opacity-75 ${
             isFocused && "prism-component-text-color"
@@ -58,7 +63,7 @@ function ComponentItem({
         <div className="ml-2">
           <div
             className={`mb-2 hover:cursor-pointer hover:opacity-75 ${
-              isCollectionOpen && "text-green-500"
+              childFocusCount !== 0 && "text-green-500"
             }`}
             onClick={onFocusComponent}
           >
@@ -66,7 +71,7 @@ function ComponentItem({
           </div>
           <div
             className={`ml-2 flex flex-col gap-2 ${
-              !isCollectionOpen && "hidden"
+              childFocusCount === 0 && "hidden"
             }`}
           >
             {(component as GroupComponents).components.map((v) => (

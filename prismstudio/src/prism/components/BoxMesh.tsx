@@ -15,10 +15,7 @@ const BoxMesh = React.memo(
 
     const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
     const wrapComponent = useSelector((state: RootState) => state.prismSlice.components.byId[elementState.wrapComponentId]);
-    //const enableGroupSelection = useSelector((state: RootState) => state.prismSlice.enableGroupSelection);
     const dispatch = useDispatch();
-
-    //useHelper(isFocused && ref, BoxHelper, "yellow");
 
     const onFocus = useCallback(() => {
       dispatch(focusComponent({ componentId: wrapComponent.id }));
