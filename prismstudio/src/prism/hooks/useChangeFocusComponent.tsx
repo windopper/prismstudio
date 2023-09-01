@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler } from "three";
+import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler, Box3 } from "three";
 import { SingleComponent, updateElementStates } from "../redux/prismSlice";
 import { useThree } from "@react-three/fiber";
 import { useDispatch, useSelector } from "react-redux";
@@ -85,7 +85,6 @@ const useChangeFocusComponent = (
           controlPosition[1] = elementPosition.y - 0.5;
         if (controlPosition[2] > elementPosition.z - 0.5)
           controlPosition[2] = elementPosition.z - 0.5;
-        
       }
 
       /* 그룹 박스 테두리 헬퍼 추가 */
@@ -93,10 +92,14 @@ const useChangeFocusComponent = (
       groupBoxes.push(groupBox);
       scene.add(groupBox);
     }
-
+    
     /* 래퍼 그룹에 추가 */
     wrapperGroup.add(...elementGroups);    
     wrapperGroup.add(...groupBoxes);
+
+    /* bounding box checker */
+    (elementGroups[0].parent?.children[1] as BoxHelper).geometry.computeBoundingBox()
+    console.log(elementGroups[0].parent?.children[1]);
 
     /* 컨트롤러에 래퍼 그룹 부착 및 위치 설정 */
     if (isSelectSingle) {

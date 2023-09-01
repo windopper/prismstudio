@@ -2,7 +2,7 @@ import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import { store } from "../../store";
 import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
 import { WritableDraft } from "immer/dist/internal";
-import { iterateChildComponents, registerComponent, removeComponent } from "./componentHelper";
+import { iterateChildComponents, putComponentToGroupComponent, registerComponent, removeComponent } from "./componentHelper";
 import { registerElementState, removeElementState } from "./elementStateHelper";
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
@@ -271,18 +271,36 @@ const prismSlice = createSlice({
       const currentFocusOn = current(state.focusOn);
       for (let componentId of currentFocusOn) {
         const component = state.components.byId[componentId];
-        const topPointer = component.topPointer;
-        const { groupComponentIds, singleComponentIds } = getChildComponentIdsFromComponent(component, current(state.components));
+        const { type, topPointer } = component;
 
-        for (let groupComponentId of groupComponentIds) {
-          delete state.components.byId[groupComponentId];
-          state.components.allIds = state.components.allIds.filter(v => v !== groupComponentId);
+        if (type === 'GroupComponents') {
+          /* 포커싱한 컴포넌트를 포함하는 그룹 컴포넌트 */
+          const topPointerComponent = state.components.byId[topPointer] as GroupComponents;
+          const groupComponentIds: string[] = [];
+          const singleComponentIds: string[] = [];
+  
+          iterateChildComponents(state, [componentId], (component) => {
+            const type = component.type;
+            component.isFocused = false;
+            if (type === 'GroupComponents') groupComponentIds.push(component.id);
+            else singleComponentIds.push(component.id);
+          })
+  
+          groupComponentIds.forEach(v => removeComponent(state, v))
+  
+          singleComponentIds.forEach(v => {
+            topPointerComponent ? putComponentToGroupComponent(state, v, topPointer) : (
+              state.components.byId[v].topPointer = COMPONENT_TOP_POINTER
+            )
+          })
+        }
+        else {
+          
         }
 
-        for (let singleComponentId of singleComponentIds) {
-
-        }
       }
+
+      state.focusOn = [];
     },
     detachComponentFromGroup: (
       state,

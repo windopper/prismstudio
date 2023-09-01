@@ -13,10 +13,34 @@ export function removeComponent(
   state: WritableDraft<PrismState>,
   componentId: string
 ) {
+  const component = state.components.byId[componentId];
+  if (component === undefined) return;
+  const topPointerComponent = state.components.byId[
+    component.topPointer
+  ] as GroupComponents;
+
+  if (topPointerComponent) {
+    topPointerComponent.components = topPointerComponent.components.filter(
+      (v) => v !== component.id
+    );
+  }
   state.components.allIds = state.components.allIds.filter(
     (v) => v !== componentId
   );
   delete state.components.byId[componentId];
+}
+
+export function putComponentToGroupComponent(
+  state: WritableDraft<PrismState>,
+  componentId: string,
+  groupComponentId: string,
+) {
+  const component = state.components.byId[componentId];
+  const groupComponent = state.components.byId[groupComponentId] as GroupComponents;
+  if (component === undefined || groupComponent === undefined) return;
+  if (component.topPointer === groupComponentId) return;
+  groupComponent.components.push(component.id);
+  component.topPointer = groupComponent.id;
 }
 
 export function iterateChildComponents(
@@ -34,6 +58,7 @@ export function iterateChildComponents(
 
         for (let id of componentIds) {
             let component = state.components.byId[id];
+            if (component === undefined) continue;
             callbackfn && callbackfn(component);
             if (component.type === 'GroupComponents') {
                 nextComponentIds.push(

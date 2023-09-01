@@ -15,10 +15,17 @@ const BoxMesh = React.memo(
 
     const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
     const wrapComponent = useSelector((state: RootState) => state.prismSlice.components.byId[elementState.wrapComponentId]);
+    const groupComponent = useSelector((state: RootState) => state.prismSlice.components.byId[wrapComponent.topPointer]);
     const dispatch = useDispatch();
 
     const onFocus = useCallback(() => {
-      dispatch(focusComponent({ componentId: wrapComponent.id }));
+      if (groupComponent !== undefined) {
+        if (groupComponent?.isFocused) dispatch(focusComponent({ componentId: wrapComponent.id }));
+        else dispatch(focusComponent({ componentId: groupComponent?.id }))
+      }
+      else {
+        dispatch(focusComponent({ componentId: wrapComponent.id }))
+      }
     }, [dispatch, wrapComponent]);
 
     return (

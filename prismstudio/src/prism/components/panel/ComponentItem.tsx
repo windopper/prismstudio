@@ -21,11 +21,13 @@ function ComponentItem({
     return state.prismSlice.components.byId[componentId];
   })
 
+  if (component === undefined) console.log(componentId);
+
   const isFocused = useSelector((state: RootState) => {
-    return state.prismSlice.components.byId[componentId].isFocused;
+    return state.prismSlice.components.byId[componentId]?.isFocused;
   })
 
-  const isGroupComponent = useMemo(() => component.type === "GroupComponents", [component.type]);
+  const isGroupComponent = useMemo(() => component?.type === "GroupComponents", [component?.type]);
 
   const setTopAndCurrentCollectionOpen = useCallback((state: boolean) => {
     if (state) {
@@ -35,7 +37,7 @@ function ComponentItem({
       isGroupComponent && setChildFocusCount(v => v - 1);
     }
     setTopCollectionOpen && setTopCollectionOpen(state);
-  }, [setTopCollectionOpen, setChildFocusCount, component.type]);
+  }, [setTopCollectionOpen, setChildFocusCount, component?.type]);
   
   /* 해당 컴포넌트가 포커스되거나 하위 컴포넌트에 의해 열렸을 때 버블링 */
   useEffect(() => {
@@ -46,6 +48,8 @@ function ComponentItem({
   const onFocusComponent = () => {
     dispatch(focusComponent({ componentId: componentId }));
   };
+  
+  if (component === undefined) return null;
   
   return (
     <>
