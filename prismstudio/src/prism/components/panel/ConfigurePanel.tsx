@@ -2,7 +2,6 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import {
-  COMPONENT_TOP_POINTER,
   ElementState,
   addNewComponent,
   attachGroupComponents,
@@ -14,17 +13,10 @@ import GroupItem from "./GroupItem";
 import StatusItem from "./StatusItem";
 import ComponentItem from "./ComponentItem";
 import PanelItemContainer from "./PanelItemContainer";
+import { COMPONENT_TOP_POINTER } from "../../constants";
 
 export default function ConfigurePanel() {
   const dispatch = useDispatch();
-
-  // const { elementStates, focusOn, components } = useSelector(
-  //   (state: RootState) => {
-  //     return state.prismSlice;
-  //   }
-  // );
-
-  //const { allIds } = components;
 
   const topComponents = useSelector((state: RootState) => {
     return state.prismSlice.components.allIds
@@ -116,14 +108,12 @@ export default function ConfigurePanel() {
             })}
           </DropDown>
         )}
-      </PanelItemContainer>
-      <PanelItemContainer>
-        {focusOn && focusedComponent && (
-          <DropDown dropDownName="상태" defaultOpenState={true}>
-            <StatusItem focusedComponent={focusedComponent} />
-          </DropDown>
-        )}
       </PanelItemContainer> */}
+      <PanelItemContainer>
+          <DropDown dropDownName="상태" defaultOpenState={true}>
+            <StatusItem />
+          </DropDown>
+      </PanelItemContainer>
     </div>
   );
 }

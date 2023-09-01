@@ -3,54 +3,42 @@ import { focusComponent, GroupComponents } from "../../redux/prismSlice";
 import { useDispatch, useSelector } from "react-redux";
 import BoxOutline from "../../svg/BoxOutline";
 import { RootState } from "../../../store";
+import { iterateChildComponents } from "../../utils/componentUtil";
 
 export interface ComponentItemProp {
-  componentId: string,
-  setTopCollectionOpen?: (v: boolean) => void;
+  componentId: string;
 }
 
-function ComponentItem({
-  componentId,
-  setTopCollectionOpen
-}: ComponentItemProp) {
-  const [childFocusCount, setChildFocusCount] = useState(0);
-
+function ComponentItem({ componentId }: ComponentItemProp) {
   const dispatch = useDispatch();
-  
+
   const component = useSelector((state: RootState) => {
     return state.prismSlice.components.byId[componentId];
-  })
-
-  if (component === undefined) console.log(componentId);
+  });
 
   const isFocused = useSelector((state: RootState) => {
     return state.prismSlice.components.byId[componentId]?.isFocused;
-  })
+  });
 
-  const isGroupComponent = useMemo(() => component?.type === "GroupComponents", [component?.type]);
+  const isChildComponentFocus = useSelector((state: RootState) => {
+    let focusCount = 0;
+    iterateChildComponents(state.prismSlice, [componentId], (component) => {
+      component.isFocused && focusCount++;
+    });
+    return focusCount !== 0;
+  });
 
-  const setTopAndCurrentCollectionOpen = useCallback((state: boolean) => {
-    if (state) {
-      isGroupComponent && setChildFocusCount(v => v + 1);
-    }
-    else {
-      isGroupComponent && setChildFocusCount(v => v - 1);
-    }
-    setTopCollectionOpen && setTopCollectionOpen(state);
-  }, [setTopCollectionOpen, setChildFocusCount, component?.type]);
-  
-  /* 해당 컴포넌트가 포커스되거나 하위 컴포넌트에 의해 열렸을 때 버블링 */
-  useEffect(() => {
-    if (isFocused) setTopAndCurrentCollectionOpen(true);
-    else setTopAndCurrentCollectionOpen(false);
-  }, [isFocused, setTopAndCurrentCollectionOpen])
+  const isGroupComponent = useMemo(
+    () => component?.type === "GroupComponents",
+    [component?.type]
+  );
 
   const onFocusComponent = () => {
     dispatch(focusComponent({ componentId: componentId }));
   };
-  
+
   if (component === undefined) return null;
-  
+
   return (
     <>
       {!isGroupComponent ? (
@@ -67,7 +55,7 @@ function ComponentItem({
         <div className="ml-2">
           <div
             className={`mb-2 hover:cursor-pointer hover:opacity-75 ${
-              childFocusCount !== 0 && "text-green-500"
+              isChildComponentFocus && "text-green-500"
             }`}
             onClick={onFocusComponent}
           >
@@ -75,15 +63,11 @@ function ComponentItem({
           </div>
           <div
             className={`ml-2 flex flex-col gap-2 ${
-              childFocusCount === 0 && "hidden"
+              !isChildComponentFocus && "hidden"
             }`}
           >
             {(component as GroupComponents).components.map((v) => (
-              <ComponentItem
-                componentId={v}
-                setTopCollectionOpen={setTopAndCurrentCollectionOpen}
-                key={v}
-              />
+              <ComponentItem componentId={v} key={v} />
             ))}
           </div>
         </div>

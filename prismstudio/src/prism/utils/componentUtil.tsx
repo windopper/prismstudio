@@ -1,6 +1,7 @@
 import {
   GroupComponents,
   PrismNormalizedComponentState,
+  PrismState,
   SingleComponent,
 } from "../redux/prismSlice";
 
@@ -64,4 +65,32 @@ export function getChildComponentIdsFromComponent(
     singleComponentIds,
     groupComponentIds
   }
+}
+
+export function iterateChildComponents(
+  state: PrismState,
+  rootComponentIds: string[],
+  callbackfn?: (
+    childComponent:
+      | SingleComponent
+      | GroupComponents
+  ) => void
+) {
+    let componentIds: string[] = rootComponentIds;
+    while (componentIds.length !== 0) {
+        let nextComponentIds = [];
+
+        for (let id of componentIds) {
+            let component = state.components.byId[id];
+            if (component === undefined) continue;
+            callbackfn && callbackfn(component);
+            if (component.type === 'GroupComponents') {
+                nextComponentIds.push(
+                  ...(component as GroupComponents).components
+                );
+            }
+        }
+
+        componentIds = nextComponentIds;
+    }
 }

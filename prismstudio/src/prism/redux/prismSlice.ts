@@ -1,17 +1,16 @@
 import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import { store } from "../../store";
-import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
+import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "../utils/componentUtil";
 import { WritableDraft } from "immer/dist/internal";
 import { iterateChildComponents, putComponentToGroupComponent, registerComponent, removeComponent } from "./componentHelper";
 import { registerElementState, removeElementState } from "./elementStateHelper";
+import { COMPONENT_TOP_POINTER } from "../constants";
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
 type ComponentId = string;
 type ElementId = string;
 
 let currentId = 1;
-
-export const COMPONENT_TOP_POINTER = "component-0";
 
 /* 요소 상태 */
 export interface ElementState {
@@ -34,7 +33,6 @@ export interface BaseComponent {
 
 /* 그룹 컴포넌트 속성 */
 export interface GroupComponents extends BaseComponent {
-  isChildComponentsFocused: boolean,
   components: ComponentId[]
 }
 
@@ -72,7 +70,6 @@ function createGroupComponent(): GroupComponents {
     name: "컴포넌트 콜렉션",
     components: [],
     isFocused: false,
-    isChildComponentsFocused: false,
     topPointer: "component-0",
   }
 }
@@ -218,9 +215,13 @@ const prismSlice = createSlice({
         scale: [x: number, y: number, z: number],
       }[]>
     ) => {
-
+      for (let { elementId, position, rotate, scale } of action.payload) {
+        const elementState = state.elementStates.byId[elementId];
+        elementState.position = position;
+        elementState.rotate = rotate;
+        elementState.scale = scale;
+      }
     },
-    /* 구현 필요 */
     attachGroupComponents: (state) => {
       if (state.focusOn.length === 0) return;
       let topPointer: string = "temp-pointer";

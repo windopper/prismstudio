@@ -4,7 +4,7 @@ import { SingleComponent, updateElementStates } from "../redux/prismSlice";
 import { useThree } from "@react-three/fiber";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { getChildElementIdsFromComponents } from "../utils/prismSliceUtil";
+import { getChildElementIdsFromComponents } from "../utils/componentUtil";
 
 const useChangeFocusComponent = (
   focusOn: string[],
@@ -78,28 +78,25 @@ const useChangeFocusComponent = (
         const element = elements.get(elementId);
         if (element === undefined) continue;
         elementGroup.add(element);
-        const elementPosition = element.getWorldPosition(new Vector3());
-        if (controlPosition[0] > elementPosition.x - 0.5)
-          controlPosition[0] = elementPosition.x - 0.5;
-        if (controlPosition[1] > elementPosition.y - 0.5)
-          controlPosition[1] = elementPosition.y - 0.5;
-        if (controlPosition[2] > elementPosition.z - 0.5)
-          controlPosition[2] = elementPosition.z - 0.5;
       }
 
       /* 그룹 박스 테두리 헬퍼 추가 */
       const groupBox = new BoxHelper(elementGroup, '#28cc4c');
       groupBoxes.push(groupBox);
       scene.add(groupBox);
-    }
-    
-    /* 래퍼 그룹에 추가 */
-    wrapperGroup.add(...elementGroups);    
-    wrapperGroup.add(...groupBoxes);
 
-    /* bounding box checker */
-    (elementGroups[0].parent?.children[1] as BoxHelper).geometry.computeBoundingBox()
-    console.log(elementGroups[0].parent?.children[1]);
+      /* 래퍼 그룹에 추가 */
+      wrapperGroup.add(elementGroup);
+      wrapperGroup.add(groupBox);
+
+      /* bounding box 모서리 컨트롤 위치 갱신 */
+      groupBox.geometry.computeBoundingBox()
+      if (groupBox.geometry.boundingBox) {
+        controlPosition[0] = groupBox.geometry.boundingBox.min.x;
+        controlPosition[1] = groupBox.geometry.boundingBox.min.y;
+        controlPosition[2] = groupBox.geometry.boundingBox.min.z;
+      }
+    }
 
     /* 컨트롤러에 래퍼 그룹 부착 및 위치 설정 */
     if (isSelectSingle) {
