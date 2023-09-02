@@ -17,6 +17,9 @@ export default function PrismControls() {
   const elementRefs = useRef<Map<string, any>>(new Map());
   const { allIds } = elementStates;
 
+
+  console.log('prism control')
+
   return (
     <>
       {allIds.map((v) => {
