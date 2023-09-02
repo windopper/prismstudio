@@ -29,7 +29,7 @@ const BoxMesh = React.memo(
     }, [dispatch, wrapComponent]);
 
     return (
-      <mesh onClick={onFocus} ref={ref} position={[0.5, 0.5, 0.5]}>
+      <mesh onClick={onFocus} ref={ref}>
         {/* <boxHelper /> */}
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color={wrapComponent.isFocused ? "#e7e7e7" : "#0050d1"} opacity={wrapComponent.isFocused ? 0.5 : 1} transparent={true} />
