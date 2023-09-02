@@ -65,11 +65,17 @@ const useChangeFocusComponent = (
     /* 새로운 그룹을 생성 및 scene에 추가 */
     const elementGroups: Group[] = [];
     const boxHelpers: BoxHelper[] = [];
+    const elementWrapperGroup = new Group();
+    const boxHelperWrapperGroup = new Group();
     const newWrapperGroup = new Group();
     newWrapperGroup.userData = {
       elementSize: 0
     };
     scene.add(newWrapperGroup);
+    scene.add(elementWrapperGroup);
+    scene.add(boxHelperWrapperGroup);
+    boxHelperWrapperGroup.position.set(0, 0, 0);
+    newWrapperGroup.add(elementWrapperGroup, boxHelperWrapperGroup);
     
     /* 루트 컴포넌트 마다 받아온 아이디로 그룹을 지정함 */
     for (let elementIds of elementIdsAsAllFocusedComponents) {
@@ -80,19 +86,14 @@ const useChangeFocusComponent = (
       const __elementGroup = new Group();
       scene.add(__elementGroup);
       elementGroups.push(__elementGroup);
-      newWrapperGroup.add(__elementGroup);
+      elementWrapperGroup.add(__elementGroup);
+      
+      let __groupBox: BoxHelper | undefined = undefined;
 
       if (elementIdsSize === 1) {
         const __element = elements.get(elementIds[0]);
-
         if (__element === undefined) continue;
-        // const hitbox = new Mesh(
-        //   __element.geometry,
-        //   new MeshBasicMaterial({ color: 0x000000, wireframe: true })
-        // );
-        // __element.add(hitbox);
         __elementGroup.add(__element);
-        //__element.position.set(0, 0, 0);
       }
       else if (elementIdsSize >= 2) {
         /* 선택된 요소에 대하여 controlPosition 계산 및 그룹에 요소 추가 */
@@ -103,23 +104,21 @@ const useChangeFocusComponent = (
         }
 
         /* 그룹 박스 테두리 헬퍼 추가 */
-        const __groupBox = new BoxHelper(__elementGroup, '#28cc4c');
+        __groupBox = new BoxHelper(__elementGroup, "#28cc4c");
         scene.add(__groupBox);
-        newWrapperGroup.add(__groupBox);
+        boxHelperWrapperGroup.add(__groupBox);
         boxHelpers.push(__groupBox);
       }
       
       const box3 = new Box3().setFromObject(__elementGroup);
       const center = new Vector3();
       box3.getCenter(center);
-      //console.log(box3);
 
       /* 상대 좌표 갱신 */
       for (let elementId of elementIds) {
         const __element = elements.get(elementId);
         const __position = new Vector3();
         __element?.getWorldPosition(__position);
-        //console.log(center)
         __position.sub(center)
         __element?.position.copy(__position);
       }
@@ -127,42 +126,24 @@ const useChangeFocusComponent = (
       __elementGroup.position.copy(center);
     }
 
-    const box3 = new Box3().setFromObject(newWrapperGroup);
+    const box3 = new Box3().setFromObject(elementWrapperGroup);
     const center = new Vector3();
     box3.getCenter(center);
-    console.log(center)
-    //console.log(box3);
 
     for (const elementGroup of elementGroups) {
       const __position = new Vector3();
       elementGroup.getWorldPosition(__position);
-      __position.sub(center)
       console.log(__position);
+      __position.sub(center);
       elementGroup.position.copy(__position);
     }
 
+    elementWrapperGroup.position.set(0, 0, 0);
     newWrapperGroup.position.copy(center);
+    boxHelperWrapperGroup.position.copy(center.multiplyScalar(-1))
     setWrapperGroup(newWrapperGroup);
 
-    /* 컨트롤러에 래퍼 그룹 부착 및 위치 설정 */
-    // if (isSelectSingle) {
-    //   control?.attach(wrapperGroup);
-    //   //console.log(control?.getWorldPosition(vec));
-    //   //control?.worldPosition.set(...controlPosition);
-    //   control?.position.set(...controlPosition);
-    //   control?.rotationAxis.set(...controlPosition)
-    //   //console.log(control?.worldPosition)
-    //   control?.addEventListener("change", onChange);
-    //   control?.addEventListener("dragging-changed", onDraggingChanged);
-    // }
-
     return () => {
-      // if (isSelectSingle) {
-      //   control?.removeEventListener("dragging-changed", onDraggingChanged);
-      //   control?.removeEventListener("change", onChange);
-      // }
-      console.log('clean up')
-
       for (let elementId of ([] as string[]).concat(...elementIdsAsAllFocusedComponents)) {
         let __worldElement = elements.get(elementId);
         if (__worldElement === undefined) continue;
@@ -184,7 +165,9 @@ const useChangeFocusComponent = (
 
       scene.remove(...elementGroups);
       scene.remove(...boxHelpers);
-      scene.remove(newWrapperGroup);
+      scene.remove(elementWrapperGroup);
+      scene.remove(boxHelperWrapperGroup);
+      scene.remove(newWrapperGroup)
     };
   }, [focusOn]);
 
