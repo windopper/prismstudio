@@ -81,7 +81,6 @@ const useChangeFocusComponent = (
       if (elementIdsSize === 1) {
         const element = elements.get(elementIds[0]);
 
-        console.log(element);
         if (element !== undefined) {
           //elementGroup.add(element);
           const hitbox = new Mesh(element.geometry, new MeshBasicMaterial({color: 0x000000, wireframe: true}))
@@ -93,16 +92,19 @@ const useChangeFocusComponent = (
 
           wrapperGroup.add(element);
           //wrapperGroup.add(elementBox);
-
-          controlPosition[0] = element.position.x
-          controlPosition[1] = element.position.y;
-          controlPosition[2] = element.position.z;
+          const vector = new Vector3();
+          element.getWorldPosition(vector);
+          console.log(vector);
+          controlPosition[0] = vector.x
+          controlPosition[1] = vector.y;
+          controlPosition[2] = vector.z;
           // element.geometry.computeBoundingBox();
           // if (element.geometry?.boundingBox) {
           //   controlPosition[0] = element.geometry.boundingBox.min.x + element.position.x;
           //   controlPosition[1] = element.geometry.boundingBox.min.y + element.position.y;
           //   controlPosition[2] = element.geometry.boundingBox.min.z + element.position.z;
           // }
+          console.log(element);
         }
       }
       else if (elementIdsSize >= 2) {
@@ -136,14 +138,16 @@ const useChangeFocusComponent = (
     /* 컨트롤러에 래퍼 그룹 부착 및 위치 설정 */
     if (isSelectSingle) {
       control?.attach(wrapperGroup);
-      const vec = new Vector3();
-      console.log(control?.getWorldPosition(vec));
+      //console.log(control?.getWorldPosition(vec));
       //control?.worldPosition.set(...controlPosition);
-      //control?.position.set(...controlPosition);
-      console.log(control?.worldPosition)
+      control?.position.set(...controlPosition);
+      control?.rotationAxis.set(...controlPosition)
+      //console.log(control?.worldPosition)
       control?.addEventListener("change", onChange);
       control?.addEventListener("dragging-changed", onDraggingChanged);
     }
+
+    console.log(control);
 
     return () => {
       if (isSelectSingle) {
