@@ -1,68 +1,24 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Group, Vector3, BoxHelper, Quaternion, Mesh, Euler, MeshBasicMaterial, Box3 } from "three";
-import { updateElementStates } from "../redux/prismSlice";
+import { useEffect, useMemo, useState } from "react";
+import { Group, Vector3, BoxHelper, Quaternion, Mesh, Box3 } from "three";
 import { useThree } from "@react-three/fiber";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { getChildElementIdsFromComponents } from "../utils/componentUtil";
+import useFocusedChildrenElementIds from "./useChildrenElementIds";
 
-const useChangeFocusComponent = (
+const useGroupFocusedElements = (
   elementRefs: React.MutableRefObject<Map<string, Mesh>>
 ) => {
-  const dispatch = useDispatch();
-  //const controlRef = useRef<any>(null);
-  const { scene } = useThree();
-
   const [wrapperGroup, setWrapperGroup] = useState<Group | undefined>();
-
-  const { components: componentsMap, focusOn } = useSelector((state: RootState) => state.prismSlice);
-  const focusedComponents = focusOn.map(v => componentsMap.byId[v]);
-
-  /* 각 루트 컴포넌트 마다 그룹을 설정하기 위해서 2차원 배열의 요소 아이디를 받아옴 */
-  const elementIdsAsAllFocusedComponents: string[][] = useMemo(
-    () =>
-      focusedComponents.map((v) =>
-        getChildElementIdsFromComponents([v], componentsMap)
-      ),
-    [focusedComponents, componentsMap]
-  );
+  const { scene } = useThree();
+  const { focusOn } = useSelector((state: RootState) => state.prismSlice);
+  const childrenElementIds = useFocusedChildrenElementIds();
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
-
-  /* transformControls 이벤트 함수 */
-  const onDraggingChanged = useCallback((event: THREE.Event) => {
-    if (event.target?.dragging) return;
-    const updatingElementStates: any[] = [];
-
-    for (let elementId of ([] as string[]).concat(...elementIdsAsAllFocusedComponents) ) {
-      let __worldElement = elements.get(elementId);
-      if (__worldElement === undefined) continue;
-
-      let __elementPosition = __worldElement?.getWorldPosition(new Vector3());
-      let __elementEuler = new Euler().setFromQuaternion(
-        __worldElement?.getWorldQuaternion(new Quaternion())
-      );
-      let __elementScale = __worldElement?.getWorldScale(new Vector3());
-
-      updatingElementStates.push({
-        elementId,
-        position: [__elementPosition.x, __elementPosition.y, __elementPosition.z],
-        rotate: [__elementEuler.x, __elementEuler.y, __elementEuler.z],
-        scale: [__elementScale.x, __elementScale.y, __elementScale.z],
-      });
-    }
-    dispatch(updateElementStates(updatingElementStates));
-  }, [elements, elementIdsAsAllFocusedComponents, dispatch]);
-
-  const onChange = useCallback((event: THREE.Event) => {
-    
-  }, []);
 
   useEffect(() => {
     if (focusOn.length === 0) {
       setWrapperGroup(undefined)
     }
 
-    /* 새로운 그룹을 생성 및 scene에 추가 */
     const elementGroups: Group[] = [];
     const boxHelpers: BoxHelper[] = [];
     const elementWrapperGroup = new Group();
@@ -78,7 +34,7 @@ const useChangeFocusComponent = (
     newWrapperGroup.add(elementWrapperGroup, boxHelperWrapperGroup);
     
     /* 루트 컴포넌트 마다 받아온 아이디로 그룹을 지정함 */
-    for (let elementIds of elementIdsAsAllFocusedComponents) {
+    for (let elementIds of childrenElementIds) {
       const elementIdsSize = elementIds.length;
       if (elementIdsSize === 0) continue;
       newWrapperGroup.userData.elementSize++;
@@ -144,7 +100,7 @@ const useChangeFocusComponent = (
     setWrapperGroup(newWrapperGroup);
 
     return () => {
-      for (let elementId of ([] as string[]).concat(...elementIdsAsAllFocusedComponents)) {
+      for (let elementId of ([] as string[]).concat(...childrenElementIds)) {
         let __worldElement = elements.get(elementId);
         if (__worldElement === undefined) continue;
         const __elementPosition = new Vector3();
@@ -174,4 +130,4 @@ const useChangeFocusComponent = (
   return { wrapperGroup };
 };
 
-export default useChangeFocusComponent;
+export default useGroupFocusedElements;
