@@ -1,5 +1,6 @@
 import { WritableDraft } from "immer/dist/internal";
 import { GroupComponents, PrismState, SingleComponent } from "./prismSlice";
+import { COMPONENT_TOP_POINTER } from "../constants";
 
 export function registerComponent(
   state: WritableDraft<PrismState>,
@@ -43,6 +44,29 @@ export function putComponentToGroupComponent(
   component.topPointer = groupComponent.id;
 }
 
+export function moveComponentTo(
+  state: WritableDraft<PrismState>,
+  componentId: string,
+  to: string
+) {
+  const __component = state.components.byId[componentId];
+  if (to === COMPONENT_TOP_POINTER) {
+    
+  }
+  else {
+    const __moveTo = state.components.byId[to] as GroupComponents;
+    if (__moveTo === undefined || __moveTo.type !== 'GroupComponents' || __component === undefined) return;
+    __moveTo.components.push(componentId);
+  }
+  
+  const __prev = __component.topPointer;
+  if (__prev !== COMPONENT_TOP_POINTER) {
+    const __prevComponent = state.components.byId[__prev] as GroupComponents;
+    __prevComponent.components = __prevComponent.components.filter(v => v !== componentId);
+  }
+  __component.topPointer = to;
+}
+
 export function iterateChildComponents(
   state: WritableDraft<PrismState>,
   rootComponentIds: string[],
@@ -69,4 +93,22 @@ export function iterateChildComponents(
 
         componentIds = nextComponentIds;
     }
+}
+
+export function getLCA(
+  state: WritableDraft<PrismState>,
+  componentIds: string[]
+): string {
+  let lca: string = COMPONENT_TOP_POINTER;
+  while (true) {
+    const children: string[] = [];
+    iterateChildComponents(state, [lca], (__components) => {
+      if (__components.type === 'SingleComponent') children.push(__components.id);
+    })
+    for (const child of children) {
+      if (componentIds.includes(child)) continue;
+      return lca;
+    }
+  }
+  return lca;
 }

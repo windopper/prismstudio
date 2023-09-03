@@ -46,19 +46,13 @@ const useGroupFocusedElements = (
       
       let __groupBox: BoxHelper | undefined = undefined;
 
-      if (elementIdsSize === 1) {
-        const __element = elements.get(elementIds[0]);
+      for (let elementId of elementIds) {
+        const __element = elements.get(elementId);
         if (__element === undefined) continue;
         __elementGroup.add(__element);
       }
-      else if (elementIdsSize >= 2) {
-        /* 선택된 요소에 대하여 controlPosition 계산 및 그룹에 요소 추가 */
-        for (let elementId of elementIds) {
-          const __element = elements.get(elementId);
-          if (__element === undefined) continue;
-          __elementGroup.add(__element);
-        }
-
+      
+      if (elementIdsSize >= 2) {
         /* 그룹 박스 테두리 헬퍼 추가 */
         __groupBox = new BoxHelper(__elementGroup, "#28cc4c");
         scene.add(__groupBox);
@@ -89,7 +83,7 @@ const useGroupFocusedElements = (
     for (const elementGroup of elementGroups) {
       const __position = new Vector3();
       elementGroup.getWorldPosition(__position);
-      console.log(__position);
+      /* 상대 좌표 */
       __position.sub(center);
       elementGroup.position.copy(__position);
     }
