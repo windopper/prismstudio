@@ -1,12 +1,16 @@
-import { Action, PayloadAction, createSlice, current } from "@reduxjs/toolkit";
-import { store } from "../../store";
-import { getChildComponentIdsFromComponent, getChildElementIdsFromComponents } from "../utils/componentUtil";
-import { WritableDraft } from "immer/dist/internal";
-import { iterateChildComponents, moveComponentTo, putComponentToGroupComponent, registerComponent, removeComponent } from "./componentHelper";
+import { PayloadAction, createSlice, current } from "@reduxjs/toolkit";
+import { iterateChildComponents, moveComponentTo, registerComponent, removeComponent } from "./componentHelper";
 import { registerElementState, removeElementState } from "./elementStateHelper";
 import { COMPONENT_TOP_POINTER } from "../constants";
-import { getComponentIdIfTopComponentSame, seperateSingleAndGroup, isComponentsAllSameType, mergeComponentsToNewGroupAndGet, mergeComponentsToExistGroupAndGet } from "./groupComponents";
+import {
+  getComponentIdIfTopComponentSame,
+  seperateSingleAndGroup,
+  isComponentsAllSameType,
+  mergeComponentsToNewGroupAndGet,
+  mergeComponentsToExistGroupAndGet,
+} from "./attachGroupComponents";
 import { setFocusOn } from "./prismSliceUtil";
+import { filterIfChildren } from "./focusComponent";
 
 type TransformControlsMode = "translate" | "rotate" | "scale";
 type ComponentId = string;
@@ -91,7 +95,6 @@ export interface PrismState {
   orbitControlState: boolean; // 공전 컨트롤러 활성화 여부
   focusOn: ComponentId[] // 선택한 컴포넌트 아이디 리스트
   enableGroupSelection: boolean; // 그룹 선택 기능 활성화 여부
-  //currentGroupSelectionComponents: SingleComponent[]; // 현재 선택한 컴포넌트들
   elementStates: PrismNormalizedElementState; // 요소 정보들
   components: PrismNormalizedComponentState; // 그룹 또는 단일 컴포넌트들
 }
@@ -156,33 +159,19 @@ const prismSlice = createSlice({
       const isEnableGroupSelection = state.enableGroupSelection;
 
       if (isEnableGroupSelection) {
-        let componentIds = [componentId];
-
         if (isFocusOn) {
-          iterateChildComponents(state, componentIds, (component) => {
-            component.isFocused = false;
-          })
-          /* 포커싱 리스트에서 제외 */
-          state.focusOn = state.focusOn.filter(v => v !== componentId);
+          const next = [...current(state.focusOn)].filter(v => v !== componentId);
+          setFocusOn(state, next);
         }
         else {
-          iterateChildComponents(state, componentIds, (component) => {
-            component.isFocused = true;
-          })
-          state.focusOn.push(componentId);
+          const next = filterIfChildren(state, [...current(state.focusOn)], componentId);
+          next.push(componentId);
+          setFocusOn(state, next);
         }
       }
       else {
-        let componentIds = current(state.focusOn);
-        iterateChildComponents(state, componentIds, (component) => {
-          component.isFocused = false;
-        })
-        componentIds = [componentId];
-        iterateChildComponents(state, componentIds, (component) => {
-          component.isFocused = true;
-        })
-
-        state.focusOn = [componentId];
+        const next = [componentId];
+        setFocusOn(state, next);
       }
     },
     outFocusComponent: (state, action: PayloadAction<{ componentId?: ComponentId }>) => {
@@ -201,12 +190,6 @@ const prismSlice = createSlice({
       action: PayloadAction<{ enabled: boolean }>
     ) => {
       state.enableGroupSelection = action.payload.enabled;
-    },
-    toggleGroupSelectionElements: (
-      state,
-      action: PayloadAction<{ componentId: ComponentId }>
-    ) => {
-
     },
     updateElementStates: (
       state,
@@ -288,12 +271,6 @@ const prismSlice = createSlice({
       }
       setFocusOn(state, newFocusOn);
     },
-    detachComponentFromGroup: (
-      state,
-      action: PayloadAction<{elementId: number}>
-    ) => {
-
-    }
 }});
 
 
@@ -310,13 +287,11 @@ export const {
   outFocusComponent,
 
   setGroupSelectionMode,
-  toggleGroupSelectionElements,
 
   updateElementStates,
 
   attachGroupComponents,
   detachGroupComponents,
-  detachComponentFromGroup,
 } = actions;
 
 export default reducer;

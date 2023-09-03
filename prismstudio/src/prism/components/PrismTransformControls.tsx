@@ -44,7 +44,6 @@ const PrismTransformControls = React.memo(
               scaleSnap={1}
               mode={transformControlsMode}
               ref={controlRef}
-              position={[1, 1, 1]}
               object={wrapperGroup}
             />
           )}

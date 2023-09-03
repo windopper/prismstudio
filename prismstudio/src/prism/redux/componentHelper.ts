@@ -95,20 +95,10 @@ export function iterateChildComponents(
     }
 }
 
-export function getLCA(
-  state: WritableDraft<PrismState>,
-  componentIds: string[]
-): string {
-  let lca: string = COMPONENT_TOP_POINTER;
-  while (true) {
-    const children: string[] = [];
-    iterateChildComponents(state, [lca], (__components) => {
-      if (__components.type === 'SingleComponent') children.push(__components.id);
-    })
-    for (const child of children) {
-      if (componentIds.includes(child)) continue;
-      return lca;
-    }
-  }
-  return lca;
+export function getChildren(state: WritableDraft<PrismState>, componentIds: string[]): string[] {
+  const ret: string[] = [];
+  iterateChildComponents(state, componentIds, (__component) => {
+    ret.push(__component.id);
+  })
+  return ret;
 }

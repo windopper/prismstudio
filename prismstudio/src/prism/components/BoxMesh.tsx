@@ -1,8 +1,6 @@
-import { useHelper } from "@react-three/drei";
-import React, { forwardRef, useCallback, useEffect } from "react";
+import React, { forwardRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BoxHelper, Color } from "three";
-import { focusComponent, outFocusComponent, toggleGroupSelectionElements } from "../redux/prismSlice";
+import { focusComponent } from "../redux/prismSlice";
 import { RootState } from "../../store";
 
 interface Prop {
@@ -30,9 +28,13 @@ const BoxMesh = React.memo(
 
     return (
       <mesh onClick={onFocus} ref={ref}>
-        {/* <boxHelper /> */}
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={wrapComponent.isFocused ? "#e7e7e7" : "#0050d1"} opacity={wrapComponent.isFocused ? 0.5 : 1} transparent={true} />
+        <meshStandardMaterial
+          color={"#0050d1"}
+          opacity={wrapComponent.isFocused ? 0.7 : 1}
+          transparent={true}
+          wireframe={wrapComponent.isFocused}
+        />
       </mesh>
     );
   })
