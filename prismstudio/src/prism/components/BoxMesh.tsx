@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback } from "react";
+import React, { forwardRef, useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { focusComponent } from "../redux/prismSlice";
 import { RootState } from "../../store";
@@ -9,6 +9,7 @@ interface Prop {
 
 const BoxMesh = React.memo(
   forwardRef((props: Prop, ref: any) => {
+    const meshRef = useRef<any>();
     const { elementId } = props;
 
     const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
@@ -20,8 +21,19 @@ const BoxMesh = React.memo(
       dispatch(focusComponent({ componentId: wrapComponent.id }))
     }, [dispatch, wrapComponent.id]);
 
+    /* TODO 월드 좌표로 움직이게 만들기 */
+    useEffect(() => {
+      console.log('update ' + elementId)
+      const { position, scale, rotate } = elementState;
+      console.log(meshRef)
+      meshRef.current?.position.set(...position)
+    }, [elementState])
+
     return (
-      <mesh onClick={onFocus} ref={ref}>
+      <mesh onClick={onFocus} ref={(el) => {
+        ref(el);
+        meshRef.current = el;
+      }}>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial
           color={"#0050d1"}

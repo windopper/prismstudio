@@ -1,10 +1,11 @@
 import DropDown from "./DropDown";
 import StatusItem from "./StatusItem";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SingleComponent } from "../../redux/prismSlice";
 import { RootState } from "../../../store";
 
 export default function StatusWithDropDown() {
+  const dispatch = useDispatch();
   const elementStates = useSelector((state: RootState) => {
     const focusOn = state.prismSlice.focusOn;
     if (focusOn.length !== 1) return;
@@ -15,6 +16,10 @@ export default function StatusWithDropDown() {
       ];
     }
   });
+
+  const updateElementState = () => {
+    
+  }
 
   return (
     <DropDown dropDownName="상태" defaultOpenState={true}>

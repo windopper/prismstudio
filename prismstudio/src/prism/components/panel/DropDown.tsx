@@ -26,7 +26,9 @@ export default function DropDown({
       className={`flex flex-col w-full items-center text-[${dropDownNameColor}]`}
     >
       <div
-        className="w-full p-1 hover:opacity-75 hover:cursor-pointer rounded-sm text-lg flex flex-row gap-1 border-b-2 border-zinc-700"
+        className="w-full p-1 hover:opacity-75 hover:cursor-pointer 
+        rounded-sm text-lg flex flex-row gap-1 border-b-2 
+        border-zinc-700/50 bg-zinc-800"
         onClick={toggleOpenState}
       >
         {isOpen ? (
@@ -40,7 +42,7 @@ export default function DropDown({
         <div
           className={`w-full px-2 py-2 flex flex-col gap-2 ${
             !isOpen && "hidden"
-          } bg-[#1f2133]`}
+          } bg-[#21244396]`}
         >
           {children}
         </div>

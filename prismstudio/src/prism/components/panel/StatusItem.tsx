@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
+import { useDispatch } from "react-redux";
+import { updateElementStates } from "../../redux/prismSlice";
 
 interface Props {
   id: string,
@@ -8,13 +10,39 @@ interface Props {
 }
 
 const StatusItem = ({id, position, rotate, scale}: Props) => {
+  const positionRefs = useRef<any>([]);
+  const rotateRefs = useRef<any>([]);
+  const scaleRefs = useRef<any>([]);
+  const dispatch = useDispatch();
+
+  const updateState = () => {
+    const position: [x: number, y: number, z: number] = [0, 0, 0];
+    const rotate: [x: number, y: number, z: number] = [0, 0, 0];
+    const scale: [x: number, y: number, z: number] = [0, 0, 0];
+
+    positionRefs.current.map((v: any, i: number) => {
+      position[i] = v.value;
+    })
+
+    dispatch(updateElementStates([{
+      elementId: id,
+      position: position,
+      rotate: rotate,
+      scale: scale
+    }]));
+  }
+
+
   return (
     <div className="flex flex-col">
       <div>component-{id}</div>
       <div className="flex flex-row m-1">
         {position.map((v, i) => (
           <div className="w-1/3 flex justify-center">
-            <input className="relative w-full bg-transparent outline-none text-center" value={v} key={i} onChange={console.log} />
+            <input className="relative w-full bg-transparent 
+            outline-none text-center" value={v} key={i} onChange={updateState} 
+            ref={(el) => positionRefs.current[i] = el}
+          />
           </div>
         ))}
       </div>
