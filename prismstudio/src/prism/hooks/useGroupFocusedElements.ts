@@ -104,13 +104,10 @@ const useGroupFocusedElements = (
         __worldElement.getWorldQuaternion(__elementQuaternion);
         __worldElement.getWorldScale(__elementScale);
         __worldElement.removeFromParent();
-        scene.remove(__worldElement);
-        console.log(__elementPosition);
         scene.add(__worldElement);
         __worldElement.position.copy(__elementPosition);
         __worldElement.quaternion.copy(__elementQuaternion);
         __worldElement.scale.copy(__elementScale);
-        console.log(__worldElement)
       }
 
       scene.remove(...elementGroups);

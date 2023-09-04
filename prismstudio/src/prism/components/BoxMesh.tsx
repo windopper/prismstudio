@@ -17,14 +17,8 @@ const BoxMesh = React.memo(
     const dispatch = useDispatch();
 
     const onFocus = useCallback(() => {
-      if (groupComponent !== undefined) {
-        if (groupComponent?.isFocused) dispatch(focusComponent({ componentId: wrapComponent.id }));
-        else dispatch(focusComponent({ componentId: groupComponent?.id }))
-      }
-      else {
-        dispatch(focusComponent({ componentId: wrapComponent.id }))
-      }
-    }, [dispatch, wrapComponent]);
+      dispatch(focusComponent({ componentId: wrapComponent.id }))
+    }, [dispatch, wrapComponent.id]);
 
     return (
       <mesh onClick={onFocus} ref={ref}>

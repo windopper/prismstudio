@@ -1,19 +1,16 @@
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import {
-  ElementState,
   addNewComponent,
   attachGroupComponents,
   deleteFocusedComponent,
   detachGroupComponents,
 } from "../../redux/prismSlice";
-import DropDown from "../../../utils/DropDown";
-import GroupItem from "./GroupItem";
-import StatusItem from "./StatusItem";
+import DropDown from "./DropDown";
 import ComponentItem from "./ComponentItem";
 import PanelItemContainer from "./PanelItemContainer";
 import { COMPONENT_TOP_POINTER } from "../../constants";
+import StatusWithDropDown from "./StatusWithDropDown";
 
 export default function ConfigurePanel() {
   const dispatch = useDispatch();
@@ -23,11 +20,6 @@ export default function ConfigurePanel() {
       .map((v) => state.prismSlice.components.byId[v])
       .filter((v) => v.topPointer === COMPONENT_TOP_POINTER);
   })
-
-  console.log('panel update');
-
-  //const focusedComponent = components.find((v) => v.id === focusOn);
-  // const topComponents = Object.values(components.byId).filter(v => v.topPointer === COMPONENT_TOP_POINTER);
 
   const onClickCreateComponent = () => {
     dispatch(addNewComponent());
@@ -90,29 +82,8 @@ export default function ConfigurePanel() {
           })}
         </DropDown>
       </PanelItemContainer>
-      {/* <PanelItemContainer>
-        {focusOn && focusedComponent && (
-          <DropDown dropDownName="그룹" defaultOpenState={true}>
-            {focusedComponent.elementIds.map((v, i) => {
-              const state = elementStates.find(
-                (elementState) => elementState.id === v
-              );
-              if (state === undefined) return null;
-              return (
-                <GroupItem
-                  elementState={state}
-                  isFocused={true}
-                  key={state.id}
-                />
-              );
-            })}
-          </DropDown>
-        )}
-      </PanelItemContainer> */}
       <PanelItemContainer>
-          <DropDown dropDownName="상태" defaultOpenState={true}>
-            <StatusItem />
-          </DropDown>
+          <StatusWithDropDown />
       </PanelItemContainer>
     </div>
   );
