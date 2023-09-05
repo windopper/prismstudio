@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { focusComponent } from "../redux/prismSlice";
-import { RootState } from "../../store";
+import { focusComponent } from "prism/redux/prismSlice";
+import { RootState } from "store";
 
 interface Prop {
   elementId: string,

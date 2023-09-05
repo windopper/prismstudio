@@ -2,10 +2,10 @@ import { TransformControls } from "@react-three/drei";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Mesh } from "three";
-import { RootState } from "../../store";
-import useGroupFocusedElements from "../hooks/useGroupFocusedElements";
-import useTransformControlEvent from "../hooks/useTransformControlEvent";
-import { TRANSLATION_SNAP } from "../constants";
+import { RootState } from "store";
+import useGroupFocusedElements from "prism/hooks/useGroupFocusedElements";
+import useTransformControlEvent from "prism/hooks/useTransformControlEvent";
+import { TRANSLATION_SNAP } from "prism/constants";
 
 export interface PrismTransformControlsProps {
   elementRefs: React.MutableRefObject<Map<string, Mesh>>;

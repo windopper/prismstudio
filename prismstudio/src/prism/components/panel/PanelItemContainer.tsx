@@ -1,10 +1,16 @@
 import React from "react";
 
-export default function PanelItemContainer({ props, children }: any) {
+interface Props {
+  bgColor?: string,
+  children: any
+}
+
+export default function PanelItemContainer({ bgColor="rgb(42, 42, 42)", children }: Props) {
   return (
     <div
-      className="w-full bg-transparent rounded-xl items-center flex 
-      flex-col text-sm border-gray-800 border-2 shadow-sm shadow-black"
+      className={`w-full rounded-xl items-center flex 
+      flex-col text-sm shadow-sm`}
+      style={{backgroundColor: bgColor}}
     >
       {children}
     </div>

@@ -1,9 +1,9 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { focusComponent, GroupComponents } from "../../redux/prismSlice";
+import { memo, useMemo } from "react";
+import { focusComponent, GroupComponents } from "prism/redux/prismSlice";
 import { useDispatch, useSelector } from "react-redux";
-import BoxOutline from "../../svg/BoxOutline";
-import { RootState } from "../../../store";
-import { iterateChildComponents } from "../../utils/componentUtil";
+import BoxOutline from "prism/svg/BoxOutline";
+import { RootState } from "store";
+import { iterateChildComponents } from "prism/utils/componentUtil";
 
 export interface ComponentItemProp {
   componentId: string;
@@ -45,7 +45,9 @@ function ComponentItem({ componentId }: ComponentItemProp) {
         <div
           className={`flex flex-row hover:opacity-75 ${
             isFocused && "prism-component-text-color"
-          } hover:cursor-pointer items-center`}
+          } hover:cursor-pointer items-center border-l-4 p-1
+          rounded-tr-lg rounded-br-lg 
+           ${isFocused ? "border-l-green-500 bg-white/10" : "border-l-transparent"}`}
           onClick={onFocusComponent}
         >
           <BoxOutline isFocus={isFocused} />
@@ -62,7 +64,7 @@ function ComponentItem({ componentId }: ComponentItemProp) {
             {component.name}
           </div>
           <div
-            className={`ml-2 flex flex-col gap-2 ${
+            className={`ml-2 flex flex-col gap-1 ${
               !isChildComponentFocus && "hidden"
             }`}
           >

@@ -25,28 +25,31 @@ export default function DropDown({
     <div
       className={`flex flex-col w-full items-center text-[${dropDownNameColor}]`}
     >
-      <div
-        className="w-full p-1 hover:opacity-75 hover:cursor-pointer 
-        rounded-sm text-lg flex flex-row gap-1 border-b-2 
-        border-zinc-700/50 bg-zinc-800"
-        onClick={toggleOpenState}
-      >
-        {isOpen ? (
-          <ChevronBottom fill={dropDownNameColor} />
-        ) : (
-          <ChevronRight fill={dropDownNameColor} />
-        )}
-        <div>{dropDownName}</div>
-      </div>
-      {React.Children.toArray(children).length !== 0 && (
-        <div
-          className={`w-full px-2 py-2 flex flex-col gap-2 ${
-            !isOpen && "hidden"
-          } bg-[#21244396]`}
+      {
+        !isOpen ? <div
+          className="w-full p-1 hover:opacity-75 hover:cursor-pointer 
+          rounded-sm text-2xl flex flex-row border-b-2 
+          border-zinc-700/50"
+          onClick={toggleOpenState}
         >
-          {children}
-        </div>
-      )}
+          {/* {isOpen ? (
+            <ChevronBottom fill={dropDownNameColor} />
+          ) : (
+            <ChevronRight fill={dropDownNameColor} />
+          )} */}
+          <div>{dropDownName}</div>
+        </div> : <>
+        {React.Children.toArray(children).length !== 0 && (
+          <div
+            className={`w-full px-2 py-2 flex flex-col gap-1 ${
+              !isOpen && "hidden"
+            }`}
+          >
+            {children}
+          </div>
+        )}
+        </>
+      }
     </div>
   );
 }

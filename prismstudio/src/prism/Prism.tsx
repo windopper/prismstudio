@@ -1,4 +1,4 @@
-import PrismControls from "./components/PrismControls";
+import PrismControls from "./components/canvas/PrismControls";
 import ConfigurePanel from "./components/panel/ConfigurePanel";
 import { Canvas } from "@react-three/fiber";
 import './Prism.css'
