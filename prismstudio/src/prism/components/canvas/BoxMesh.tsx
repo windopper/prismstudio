@@ -2,6 +2,7 @@ import React, { forwardRef, useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { focusComponent } from "prism/redux/prismSlice";
 import { RootState } from "store";
+import { useThree } from "@react-three/fiber";
 
 interface Prop {
   elementId: string,
@@ -12,6 +13,7 @@ const BoxMesh = React.memo(
     const meshRef = useRef<any>();
     const { elementId } = props;
 
+    const { scene } = useThree();
     const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
     const wrapComponent = useSelector((state: RootState) => state.prismSlice.components.byId[elementState.wrapComponentId]);
     const groupComponent = useSelector((state: RootState) => state.prismSlice.components.byId[wrapComponent.topPointer]);
@@ -26,7 +28,10 @@ const BoxMesh = React.memo(
       console.log('update ' + elementId)
       const { position, scale, rotate } = elementState;
       console.log(meshRef)
+      const parent = meshRef.current?.parent;
+      scene.attach(meshRef.current);
       meshRef.current?.position.set(...position)
+      parent.attach(meshRef.current);
     }, [elementState])
 
     return (

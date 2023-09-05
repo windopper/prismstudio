@@ -6,6 +6,7 @@ import { RootState } from "store";
 import useGroupFocusedElements from "prism/hooks/useGroupFocusedElements";
 import useTransformControlEvent from "prism/hooks/useTransformControlEvent";
 import { TRANSLATION_SNAP } from "prism/constants";
+import { useThree } from "@react-three/fiber";
 
 export interface PrismTransformControlsProps {
   elementRefs: React.MutableRefObject<Map<string, Mesh>>;
@@ -15,6 +16,7 @@ const PrismTransformControls = React.memo(
   (props: PrismTransformControlsProps) => {
     const { elementRefs } = props;
     const controlRef = useRef<any>();
+    const { scene } = useThree();
 
     const { transformControlsMode } = useSelector(
       (state: RootState) => state.prismSlice
@@ -34,6 +36,7 @@ const PrismTransformControls = React.memo(
       transformControls?.addEventListener('dragging-changed', onDraggingChanged);
       return () => {
         transformControls?.removeEventListener('dragging-changed', onDraggingChanged);
+        wrapperGroup && scene.remove(wrapperGroup);
       }
     }, [wrapperGroup]);
 

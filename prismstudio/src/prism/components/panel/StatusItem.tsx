@@ -40,7 +40,7 @@ const StatusItem = ({id, position, rotate, scale}: Props) => {
         {position.map((v, i) => (
           <div className="w-1/3 flex justify-center">
             <input className="relative w-full bg-transparent 
-            outline-none text-center" value={v} key={i} onChange={updateState} 
+            outline-none text-center" value={v} key={i} 
             ref={(el) => positionRefs.current[i] = el}
           />
           </div>
