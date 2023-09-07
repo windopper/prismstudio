@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Mesh } from "three";
 import { RootState } from "store";
-import useGroupFocusedElements from "prism/hooks/useGroupFocusedElements";
+import useTransformControls from "prism/hooks/useTransformControls";
 import useTransformControlEvent from "prism/hooks/useTransformControlEvent";
 import { TRANSLATION_SNAP } from "prism/constants";
 import { useThree } from "@react-three/fiber";
@@ -22,7 +22,7 @@ const PrismTransformControls = React.memo(
       (state: RootState) => state.prismSlice
     );
 
-    const { wrapperGroup } = useGroupFocusedElements(elementRefs);
+    const transformControls = useTransformControls(elementRefs);
     const {
       stopOrbitControls,
       startOrbitControls,
@@ -31,33 +31,15 @@ const PrismTransformControls = React.memo(
     } = useTransformControlEvent(elementRefs);
 
     useEffect(() => {
-      const transformControls = controlRef.current;
       if (transformControls === undefined) return;
+      
       transformControls?.addEventListener('dragging-changed', onDraggingChanged);
       return () => {
         transformControls?.removeEventListener('dragging-changed', onDraggingChanged);
-        wrapperGroup && scene.remove(wrapperGroup);
       }
-    }, [wrapperGroup]);
+    }, [transformControls]);
 
-    return (
-      <>
-        {wrapperGroup !== undefined &&
-          wrapperGroup.userData.elementSize === 1 && (
-            <TransformControls
-              onMouseDown={stopOrbitControls}
-              onMouseUp={startOrbitControls}
-              size={1}
-              translationSnap={TRANSLATION_SNAP}
-              rotationSnap={30 * 0.0174533}
-              scaleSnap={1}
-              mode={transformControlsMode}
-              ref={controlRef}
-              object={wrapperGroup}
-            />
-          )}
-      </>
-    );
+    return null;
   }
 );
 

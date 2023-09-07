@@ -1,22 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Group, Vector3, BoxHelper, Quaternion, Mesh, Box3 } from "three";
 import { useThree } from "@react-three/fiber";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import useFocusedChildrenElementIds from "./useChildrenElementIds";
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 
-const useGroupFocusedElements = (
+const useTransformControls = (
   elementRefs: React.MutableRefObject<Map<string, Mesh>>
-) => {
-  const [wrapperGroup, setWrapperGroup] = useState<Group | undefined>();
-  const { scene } = useThree();
+): TransformControls | undefined => {
+  const [transformControls, setTransformControls] = useState<TransformControls | undefined>();
   const { focusOn } = useSelector((state: RootState) => state.prismSlice);
+  const { scene, camera, gl } = useThree();
   const childrenElementIds = useFocusedChildrenElementIds();
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
 
   useEffect(() => {
     if (focusOn.length === 0) {
-      setWrapperGroup(undefined)
+      setTransformControls(undefined);
+      return;
     }
 
     const elementGroups: Group[] = [];
@@ -32,7 +34,7 @@ const useGroupFocusedElements = (
     scene.add(boxHelperWrapperGroup);
     boxHelperWrapperGroup.position.set(0, 0, 0);
     newWrapperGroup.add(elementWrapperGroup, boxHelperWrapperGroup);
-    
+
     /* 루트 컴포넌트 마다 받아온 아이디로 그룹을 지정함 */
     for (let elementIds of childrenElementIds) {
       const elementIdsSize = elementIds.length;
@@ -91,9 +93,16 @@ const useGroupFocusedElements = (
     elementWrapperGroup.position.set(0, 0, 0);
     newWrapperGroup.position.copy(center);
     boxHelperWrapperGroup.position.copy(center.multiplyScalar(-1))
-    setWrapperGroup(newWrapperGroup);
+
+    const transformControls = new TransformControls(camera, gl.domElement);
+    transformControls.attach(newWrapperGroup);
+    scene.add(transformControls);
+    setTransformControls(transformControls);
 
     return () => {
+      transformControls.detach();
+      scene.remove(transformControls);
+
       for (let elementId of ([] as string[]).concat(...childrenElementIds)) {
         let __worldElement = elements.get(elementId);
         if (__worldElement === undefined) continue;
@@ -118,7 +127,7 @@ const useGroupFocusedElements = (
     };
   }, [focusOn]);
 
-  return { wrapperGroup };
+  return transformControls;
 };
 
-export default useGroupFocusedElements;
+export default useTransformControls;
