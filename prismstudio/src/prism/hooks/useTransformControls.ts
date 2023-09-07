@@ -10,7 +10,7 @@ const useTransformControls = (
   elementRefs: React.MutableRefObject<Map<string, Mesh>>
 ): TransformControls | undefined => {
   const [transformControls, setTransformControls] = useState<TransformControls | undefined>();
-  const { focusOn } = useSelector((state: RootState) => state.prismSlice);
+  const { focusOn, elementStates } = useSelector((state: RootState) => state.prismSlice);
   const { scene, camera, gl } = useThree();
   const childrenElementIds = useFocusedChildrenElementIds();
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
@@ -125,7 +125,7 @@ const useTransformControls = (
       scene.remove(boxHelperWrapperGroup);
       scene.remove(newWrapperGroup)
     };
-  }, [focusOn]);
+  }, [focusOn, elementStates]);
 
   return transformControls;
 };

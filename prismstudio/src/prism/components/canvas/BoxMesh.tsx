@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { focusComponent } from "prism/redux/prismSlice";
 import { RootState } from "store";
 import { useThree } from "@react-three/fiber";
+import { Mesh } from "three";
 
 interface Prop {
   elementId: string,
@@ -10,7 +11,7 @@ interface Prop {
 
 const BoxMesh = React.memo(
   forwardRef((props: Prop, ref: any) => {
-    const meshRef = useRef<any>();
+    const meshRef = useRef<Mesh>();
     const { elementId } = props;
 
     const { scene } = useThree();
@@ -23,21 +24,20 @@ const BoxMesh = React.memo(
       dispatch(focusComponent({ componentId: wrapComponent.id }))
     }, [dispatch, wrapComponent.id]);
 
-    /* TODO 월드 좌표로 움직이게 만들기 */
     useEffect(() => {
-      console.log('update ' + elementId)
       const { position, scale, rotate } = elementState;
-      console.log(meshRef)
       const parent = meshRef.current?.parent;
-      scene.attach(meshRef.current);
+      scene.attach(meshRef.current as any);
       meshRef.current?.position.set(...position)
-      parent.attach(meshRef.current);
+      meshRef.current?.rotation.set(...rotate);
+      //meshRef.current?.rotate.set(...rotate);
+      parent?.attach(meshRef.current as any);
     }, [elementState])
 
     return (
       <mesh onClick={onFocus} ref={(el) => {
         ref(el);
-        meshRef.current = el;
+        meshRef.current = el as Mesh;
       }}>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial

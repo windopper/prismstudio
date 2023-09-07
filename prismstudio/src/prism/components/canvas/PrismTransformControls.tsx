@@ -39,7 +39,7 @@ const PrismTransformControls = React.memo(
     useEffect(() => {
       if (transformControls === undefined) return;
       transformControls.setMode(transformControlsMode);
-    }, [transformControlsMode])
+    }, [transformControls, transformControlsMode])
 
     return null;
   }

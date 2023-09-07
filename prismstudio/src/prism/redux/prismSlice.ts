@@ -202,6 +202,9 @@ const prismSlice = createSlice({
     ) => {
       for (let { elementId, position, rotate, scale } of action.payload) {
         const elementState = state.elementStates.byId[elementId];
+        position = position.map(v => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
+        rotate = rotate.map(v => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
+        scale = scale.map(v => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
         elementState.position = position;
         elementState.rotate = rotate;
         elementState.scale = scale;
