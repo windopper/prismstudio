@@ -21,6 +21,7 @@
     height: 20px; /* 슬라이더 두께 */
     background: #181818; /* 슬라이더 색상 */
     outline: none; /* 슬라이더 테두리 없이 */
+    margin: 0.5rem;
 }
 
 .slider::-webkit-slider-thumb {
@@ -28,8 +29,9 @@
     appearance: none; /* 기본 CSS 스타일을 적용하지 않기 위해서 */
     width: 3px; /* 슬라이더 핸들 길이 */
     height: 20px; /* 슬라이더 핸들 높이 */
+
     /* border-radius: 50%; 핸들 모양을 원모양으로 만들기 위함 */
-    background: rgb(255, 42, 131); /* 슬라이더 핸들 색상 */
+    background: rgb(219, 219, 219); /* 슬라이더 핸들 색상 */
     cursor: pointer; /* 슬라이더 핸들에 마우스를 갖다대면 포인터로 변경 */
 }
 

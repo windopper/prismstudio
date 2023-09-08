@@ -10,7 +10,7 @@ import DropDown from "./DropDown";
 import ComponentItem from "./ComponentItem";
 import PanelItemContainer from "./PanelItemContainer";
 import { COMPONENT_TOP_POINTER } from "../../constants";
-import StatusWithDropDown from "./StatusWithDropDown";
+import StatusWithDropDown from "prism/components/panel/status/StatusWithDropDown";
 
 export default function ConfigurePanel() {
   const dispatch = useDispatch();
@@ -19,7 +19,7 @@ export default function ConfigurePanel() {
     return state.prismSlice.components.allIds
       .map((v) => state.prismSlice.components.byId[v])
       .filter((v) => v.topPointer === COMPONENT_TOP_POINTER);
-  })
+  });
 
   const onClickCreateComponent = () => {
     dispatch(addNewComponent());
@@ -73,17 +73,12 @@ export default function ConfigurePanel() {
       <PanelItemContainer>
         <DropDown dropDownName="컴포넌트" defaultOpenState={true}>
           {topComponents.map((v) => {
-            return (
-              <ComponentItem
-                componentId={v.id}
-                key={v.id}
-              />
-            );
+            return <ComponentItem componentId={v.id} key={v.id} />;
           })}
         </DropDown>
       </PanelItemContainer>
       <PanelItemContainer>
-          <StatusWithDropDown />
+        <StatusWithDropDown />
       </PanelItemContainer>
     </div>
   );

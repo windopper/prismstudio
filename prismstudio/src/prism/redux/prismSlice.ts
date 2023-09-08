@@ -54,7 +54,7 @@ function createElementState(): ElementState {
     wrapComponentId: "component-0",
     position: [0, 0, 0],
     rotate: [0, 0, 0],
-    scale: [0, 0, 0],
+    scale: [1, 1, 1],
   };
 }
 

@@ -6,7 +6,7 @@ import { useThree } from "@react-three/fiber";
 import { Mesh } from "three";
 
 interface Prop {
-  elementId: string,
+  elementId: string;
 }
 
 const BoxMesh = React.memo(
@@ -15,30 +15,41 @@ const BoxMesh = React.memo(
     const { elementId } = props;
 
     const { scene } = useThree();
-    const elementState = useSelector((state: RootState) => state.prismSlice.elementStates.byId[elementId]);
-    const wrapComponent = useSelector((state: RootState) => state.prismSlice.components.byId[elementState.wrapComponentId]);
-    const groupComponent = useSelector((state: RootState) => state.prismSlice.components.byId[wrapComponent.topPointer]);
+    const elementState = useSelector(
+      (state: RootState) => state.prismSlice.elementStates.byId[elementId]
+    );
+    const wrapComponent = useSelector(
+      (state: RootState) =>
+        state.prismSlice.components.byId[elementState.wrapComponentId]
+    );
+    const groupComponent = useSelector(
+      (state: RootState) =>
+        state.prismSlice.components.byId[wrapComponent.topPointer]
+    );
     const dispatch = useDispatch();
 
     const onFocus = useCallback(() => {
-      dispatch(focusComponent({ componentId: wrapComponent.id }))
+      dispatch(focusComponent({ componentId: wrapComponent.id }));
     }, [dispatch, wrapComponent.id]);
 
     useEffect(() => {
       const { position, scale, rotate } = elementState;
       const parent = meshRef.current?.parent;
       scene.attach(meshRef.current as any);
-      meshRef.current?.position.set(...position)
+      meshRef.current?.position.set(...position);
       meshRef.current?.rotation.set(...rotate);
-      //meshRef.current?.rotate.set(...rotate);
+      meshRef.current?.scale.set(...scale);
       parent?.attach(meshRef.current as any);
-    }, [elementState])
+    }, [elementState]);
 
     return (
-      <mesh onClick={onFocus} ref={(el) => {
-        ref(el);
-        meshRef.current = el as Mesh;
-      }}>
+      <mesh
+        onClick={onFocus}
+        ref={(el) => {
+          ref(el);
+          meshRef.current = el as Mesh;
+        }}
+      >
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial
           color={"#0050d1"}
