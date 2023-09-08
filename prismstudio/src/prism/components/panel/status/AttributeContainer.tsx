@@ -6,7 +6,7 @@ interface Props {
 const AttributeContainer = ({ className, children }: Props) => {
   return (
     <div
-      className={`flex flex-col gap-1
+      className={`flex flex-col
     ${className}`}
     >
       {children}

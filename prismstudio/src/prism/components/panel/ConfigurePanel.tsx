@@ -39,7 +39,7 @@ export default function ConfigurePanel() {
 
   return (
     <div
-      className="absolute top-0.5 right-0.5 flex flex-col w-[300px] z-10 
+      className="absolute top-0.5 right-0.5 flex flex-col w-[300px] z-10
       m-2 rounded-lg items-center text-sm gap-2 max-h-[98%] overflow-y-scroll overflow-x-hidden"
     >
       <PanelItemContainer bgColor="#d4d4d4">

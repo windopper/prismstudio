@@ -31,11 +31,6 @@ export default function DropDown({
           border-zinc-700/50"
             onClick={toggleOpenState}
           >
-            {/* {isOpen ? (
-            <ChevronBottom fill={dropDownNameColor} />
-          ) : (
-            <ChevronRight fill={dropDownNameColor} />
-          )} */}
             <div>{dropDownName}</div>
           </div>
         </DropDownContainer>
