@@ -22,7 +22,7 @@ const PrismTransformControls = React.memo(
       startOrbitControls,
       onChange,
       onDraggingChanged,
-    } = useTransformControlEvent(elementRefs);
+    } = useTransformControlEvent(elementRefs, transformControls);
 
     useEffect(() => {
       if (transformControls === undefined) return;

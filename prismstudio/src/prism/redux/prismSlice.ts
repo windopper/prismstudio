@@ -16,6 +16,14 @@ type TransformControlsMode = "translate" | "rotate" | "scale";
 type ComponentId = string;
 type ElementId = string;
 
+export type ThreeArray = [x: number, y: number, z: number];
+
+export interface TransformControlsState {
+  position: ThreeArray,
+  rotate: ThreeArray,
+  scale: ThreeArray,
+}
+
 let currentId = 1;
 
 /* 요소 상태 */
@@ -23,9 +31,9 @@ export interface ElementState {
   id: ElementId;
   name: string,
   wrapComponentId: ComponentId, // 감싼 컴포넌트의 아이디
-  position: [x: number, y: number, z: number];
-  rotate: [x: number, y: number, z: number];
-  scale: [x: number, y: number, z: number];
+  position: ThreeArray;
+  rotate: ThreeArray;
+  scale: ThreeArray;
 }
 
 /* 컴포넌트 기본 속성 */
@@ -91,6 +99,7 @@ export interface PrismNormalizedComponentState {
 }; 
 
 export interface PrismState {
+  transformControlsState: TransformControlsState | undefined;
   transformControlsMode: TransformControlsMode; // 컨트롤 모드 설정
   orbitControlState: boolean; // 공전 컨트롤러 활성화 여부
   focusOn: ComponentId[] // 선택한 컴포넌트 아이디 리스트
@@ -102,6 +111,7 @@ export interface PrismState {
 const prismSlice = createSlice({
   name: "prism",
   initialState: {
+    transformControlsState: undefined,
     transformControlsMode: "translate",
     orbitControlState: true,
     focusOn: [],
@@ -116,6 +126,12 @@ const prismSlice = createSlice({
     },
   } as PrismState,
   reducers: {
+    setTransformControlsState(
+      state,
+      action: PayloadAction<{ transformControlsState: TransformControlsState | undefined}>
+    ) { 
+      state.transformControlsState = action.payload.transformControlsState;
+    },
     setTransformControlsMode(
       state,
       action: PayloadAction<{ mode: TransformControlsMode }>
@@ -279,6 +295,7 @@ const prismSlice = createSlice({
 
 const { reducer, actions } = prismSlice;
 export const {
+  setTransformControlsState,
   setTransformControlsMode,
 
   toggleOrbitControl,
