@@ -54,6 +54,7 @@ const useTransformControlEvent = (
 
   const onDraggingChangedTest = useCallback((event: THREE.Event) => {
     if (transformControls === undefined || transformControls.object === undefined) return;
+    if (event.target.dragging) return;
     const __position = transformControls.object.getWorldPosition(new Vector3());
     const __euler = new Euler().setFromQuaternion(
       transformControls.object.getWorldQuaternion(new Quaternion())
@@ -64,6 +65,8 @@ const useTransformControlEvent = (
       rotate: [__euler.x, __euler.y, __euler.z],
       scale: [__scale.x, __scale.y, __scale.z]
     }}))
+
+    onDraggingChanged(event);
   }, [transformControls]);
 
   const onChange = useCallback((event: THREE.Event) => {}, []);

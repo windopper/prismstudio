@@ -4,7 +4,7 @@ import AttributeTitle from "./AttributeTitle";
 import PanelInput from "./PanelInput";
 import { getRegex } from "./StatusItem";
 import { useDispatch } from "react-redux";
-import { ElementState, updateElementStates } from "prism/redux/prismSlice";
+import { ElementState, setTransformControlsState, updateElementStates } from "prism/redux/prismSlice";
 import AttributeInputContainer from "./AttributeInputContainer";
 
 interface Props {
@@ -38,15 +38,25 @@ const StatusPosition = ({ elementStates }: Props) => {
     });
 
     dispatch(
-      updateElementStates([
-        {
-          elementId: id,
+      setTransformControlsState({
+        transformControlsState: {
           position: position,
           rotate: rotate,
           scale: scale,
         },
-      ])
+      })
     );
+
+    // dispatch(
+    //   updateElementStates([
+    //     {
+    //       elementId: id,
+    //       position: position,
+    //       rotate: rotate,
+    //       scale: scale,
+    //     },
+    //   ])
+    // );
 
     setIsValueInValid(false);
   };

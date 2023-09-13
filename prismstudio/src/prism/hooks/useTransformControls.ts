@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Group, Vector3, BoxHelper, Quaternion, Mesh, Box3 } from "three";
 import { useThree } from "@react-three/fiber";
 import { useSelector } from "react-redux";
@@ -10,7 +10,7 @@ const useTransformControls = (
   elementRefs: React.MutableRefObject<Map<string, Mesh>>
 ): TransformControls | undefined => {
   const [transformControls, setTransformControls] = useState<TransformControls | undefined>();
-  const { focusOn, elementStates } = useSelector((state: RootState) => state.prismSlice);
+  const { focusOn, elementStates, transformControlsState } = useSelector((state: RootState) => state.prismSlice);
   const { scene, camera, gl } = useThree();
   const childrenElementIds = useFocusedChildrenElementIds();
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
@@ -125,7 +125,7 @@ const useTransformControls = (
       scene.remove(boxHelperWrapperGroup);
       scene.remove(newWrapperGroup)
     };
-  }, [focusOn, elementStates]);
+  }, [focusOn, elementStates, transformControlsState]);
 
   return transformControls;
 };
