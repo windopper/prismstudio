@@ -67,7 +67,7 @@ const useTransformControlEvent = (
     }}))
 
     onDraggingChanged(event);
-  }, [transformControls]);
+  }, [dispatch, transformControls]);
 
   const onChange = useCallback((event: THREE.Event) => {}, []);
 

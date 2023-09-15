@@ -130,7 +130,19 @@ const prismSlice = createSlice({
       state,
       action: PayloadAction<{ transformControlsState: TransformControlsState | undefined}>
     ) { 
-      state.transformControlsState = action.payload.transformControlsState;
+      if (action.payload.transformControlsState === undefined) {
+        state.transformControlsState = undefined;
+        return;
+      }
+      const position = action.payload.transformControlsState.position.map(v => Math.round(v * 1000) / 1000) as ThreeArray;
+      const scale = action.payload.transformControlsState.scale.map(v => Math.round(v * 1000) / 1000) as ThreeArray;
+      const rotate = action.payload.transformControlsState.rotate.map(v => Math.round(v * 1000) / 1000) as ThreeArray;
+      
+      state.transformControlsState = {
+        position,
+        rotate,
+        scale
+      }
     },
     setTransformControlsMode(
       state,
@@ -200,6 +212,7 @@ const prismSlice = createSlice({
 
       if (componentId === undefined) state.focusOn = [];
       else state.focusOn = state.focusOn.filter(v => v !== componentId);
+      state.transformControlsState = undefined;
     },
     setGroupSelectionMode: (
       state,
@@ -211,16 +224,16 @@ const prismSlice = createSlice({
       state,
       action: PayloadAction<{
         elementId: ElementId,
-        position: [x: number, y: number, z: number],
-        rotate: [x: number, y: number, z: number],
-        scale: [x: number, y: number, z: number],
+        position: ThreeArray,
+        rotate: ThreeArray,
+        scale: ThreeArray,
       }[]>
     ) => {
       for (let { elementId, position, rotate, scale } of action.payload) {
         const elementState = state.elementStates.byId[elementId];
-        position = position.map(v => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
-        rotate = rotate.map(v => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
-        scale = scale.map(v => Math.round(v * 1000) / 1000) as [x: number, y: number, z: number];
+        position = position.map(v => Math.round(v * 1000) / 1000) as ThreeArray;
+        rotate = rotate.map(v => Math.round(v * 1000) / 1000) as ThreeArray;
+        scale = scale.map(v => Math.round(v * 1000) / 1000) as ThreeArray;
         elementState.position = position;
         elementState.rotate = rotate;
         elementState.scale = scale;

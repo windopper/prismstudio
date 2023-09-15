@@ -16,6 +16,16 @@ const useTransformControls = (
   const elements = useMemo(() => new Map(elementRefs.current), [focusOn]);
 
   useEffect(() => {
+    if (transformControls === undefined || transformControls.object === undefined || transformControlsState === undefined) return;
+    const group: Group = transformControls.object as Group;
+    scene.attach(group);
+    group.position.set(...transformControlsState.position);
+    group.rotation.set(...transformControlsState.rotate);
+    group.scale.set(...transformControlsState.scale);
+    transformControls.attach(group);
+  }, [transformControlsState])
+
+  useEffect(() => {
     if (focusOn.length === 0) {
       setTransformControls(undefined);
       return;
@@ -125,7 +135,7 @@ const useTransformControls = (
       scene.remove(boxHelperWrapperGroup);
       scene.remove(newWrapperGroup)
     };
-  }, [focusOn, elementStates, transformControlsState]);
+  }, [focusOn, elementStates]);
 
   return transformControls;
 };

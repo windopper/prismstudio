@@ -4,19 +4,19 @@ import AttributeTitle from "./AttributeTitle";
 import PanelInput from "./PanelInput";
 import { getRegex } from "./StatusItem";
 import { useDispatch } from "react-redux";
-import { ElementState, setTransformControlsState, updateElementStates } from "prism/redux/prismSlice";
+import { ElementState, ThreeArray, TransformControlsState, setTransformControlsState, updateElementStates } from "prism/redux/prismSlice";
 import AttributeInputContainer from "./AttributeInputContainer";
 
 interface Props {
-  elementStates: ElementState;
+  transformControlsState: TransformControlsState;
 }
 
-const StatusPosition = ({ elementStates }: Props) => {
+const StatusPosition = ({ transformControlsState }: Props) => {
   const positionRefs = useRef<HTMLInputElement[]>([]);
   const [isValueInValid, setIsValueInValid] = useState<boolean>(false);
   const dispatch = useDispatch();
 
-  const { id, position, rotate, scale } = elementStates;
+  const { position, rotate, scale } = transformControlsState;
 
   useEffect(() => {
     if (isValueInValid) return;
@@ -26,7 +26,7 @@ const StatusPosition = ({ elementStates }: Props) => {
   }, [position, isValueInValid]);
 
   const updateState = () => {
-    const position: [x: number, y: number, z: number] = [0, 0, 0];
+    const position: ThreeArray = [0, 0, 0];
     for (const p of positionRefs.current.map((v) => v.value)) {
       if (getRegex().test(p)) continue;
       setIsValueInValid(true);
