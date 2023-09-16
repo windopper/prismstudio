@@ -13,8 +13,6 @@ export default function PrismControls() {
   } = useSelector((state: RootState) => {
     return state.prismSlice;
   });
-
-  const elementRefs = useRef<Map<string, any>>(new Map());
   const { allIds } = elementStates;
 
   return (
@@ -22,13 +20,12 @@ export default function PrismControls() {
       {allIds.map((v) => {
         return (
           <BoxMesh
-            ref={elem => (elementRefs.current.set(v, elem))}
             key={v}
             elementId={v}
           />
         );
       })}
-      <PrismTransformControls elementRefs={elementRefs} />
+      <PrismTransformControls />
       <OrbitControls enableDamping={false} enabled={orbitControlState} />
     </>
   );

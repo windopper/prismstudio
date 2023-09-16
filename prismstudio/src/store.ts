@@ -1,10 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import testSlice from './features/test/testSlice'
 import prismSlice from './prism/redux/prismSlice'
 
 export const store = configureStore({
     reducer: {
-        testSlice,
         prismSlice,
     },
     devTools: process.env.NODE_ENV !== 'production',

@@ -6,6 +6,7 @@ import { getRegex } from "./StatusItem";
 import { useDispatch } from "react-redux";
 import { ElementState, ThreeArray, TransformControlsState, setTransformControlsState, updateElementStates } from "prism/redux/prismSlice";
 import AttributeInputContainer from "./AttributeInputContainer";
+import useDispatchStateOnControlled from "prism/hooks/useDispatchStateOnControlled";
 
 interface Props {
   transformControlsState: TransformControlsState;
@@ -14,7 +15,8 @@ interface Props {
 const StatusPosition = ({ transformControlsState }: Props) => {
   const positionRefs = useRef<HTMLInputElement[]>([]);
   const [isValueInValid, setIsValueInValid] = useState<boolean>(false);
-  const dispatch = useDispatch();
+  const { dispatchElementStates, dispatchTransformControlsState } =
+    useDispatchStateOnControlled();
 
   const { position, rotate, scale } = transformControlsState;
 
@@ -37,27 +39,8 @@ const StatusPosition = ({ transformControlsState }: Props) => {
       position[i] = parseFloat(v.value);
     });
 
-    dispatch(
-      setTransformControlsState({
-        transformControlsState: {
-          position: position,
-          rotate: rotate,
-          scale: scale,
-        },
-      })
-    );
-
-    // dispatch(
-    //   updateElementStates([
-    //     {
-    //       elementId: id,
-    //       position: position,
-    //       rotate: rotate,
-    //       scale: scale,
-    //     },
-    //   ])
-    // );
-
+    dispatchTransformControlsState(position, rotate, scale);
+    dispatchElementStates();
     setIsValueInValid(false);
   };
 

@@ -5,12 +5,14 @@ import { RootState } from "store";
 import { useThree } from "@react-three/fiber";
 import { Mesh } from "three";
 
+export const boxMeshs = new Map<string, React.MutableRefObject<Mesh | undefined>>();
+
 interface Prop {
   elementId: string;
 }
 
 const BoxMesh = React.memo(
-  forwardRef((props: Prop, ref: any) => {
+  (props: Prop) => {
     const meshRef = useRef<Mesh>();
     const { elementId } = props;
 
@@ -21,10 +23,6 @@ const BoxMesh = React.memo(
     const wrapComponent = useSelector(
       (state: RootState) =>
         state.prismSlice.components.byId[elementState.wrapComponentId]
-    );
-    const groupComponent = useSelector(
-      (state: RootState) =>
-        state.prismSlice.components.byId[wrapComponent.topPointer]
     );
     const dispatch = useDispatch();
 
@@ -42,11 +40,18 @@ const BoxMesh = React.memo(
       parent?.attach(meshRef.current as any);
     }, [elementState]);
 
+    useEffect(() => {
+      boxMeshs.set(elementId, meshRef);
+
+      return () => {
+        boxMeshs.delete(elementId);
+      }
+    }, [])
+
     return (
       <mesh
         onClick={onFocus}
         ref={(el) => {
-          ref(el);
           meshRef.current = el as Mesh;
         }}
       >
@@ -59,7 +64,6 @@ const BoxMesh = React.memo(
         />
       </mesh>
     );
-  })
-);
+  });
 
 export default BoxMesh;
